@@ -15,6 +15,10 @@ public class LoginPage extends Application
 	{
 		stage.setTitle("Support360 Login Page");
 		
+		/*
+		 * PAGE LAYOUT
+		 */
+		
 		//set up page as grid
 		GridPane grid = new GridPane();
 		grid.setAlignment(Pos.CENTER);
@@ -54,10 +58,28 @@ public class LoginPage extends Application
 		createAccount.getStyleClass().add("button");
 		grid.add(createAccount, 1, 5);
 		
+		/*
+		 * EVENT HANDLING
+		 */
+		
+		//handle login button
+		loginButton.setOnAction(event ->
+		{
+			ChooseRolePage chooseRolePage = new ChooseRolePage();
+			Stage chooseRoleStage = new Stage();
+			chooseRolePage.start(chooseRoleStage);
+			stage.close();
+		});
+		
+		/*
+		 * SCENE/STAGE
+		 */
+		
 		//scene creation
 		Scene scene = new Scene(grid, 600, 500);
 		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
 		
+		//show stage
 		stage.setScene(scene);
 		stage.show();
 		
