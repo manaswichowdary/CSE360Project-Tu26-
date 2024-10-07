@@ -3,10 +3,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 public class ChooseRolePage extends Application
@@ -32,6 +29,18 @@ public class ChooseRolePage extends Application
 		VBox vbox = new VBox(15);
 		vbox.setAlignment(Pos.CENTER);
 		vbox.getChildren().addAll(chooseLabel, studentButton, adminButton, instructorButton);
+		
+		/*
+		 * EVENT HANDLING
+		 */
+		//handle student button
+		studentButton.setOnAction(event ->
+		{
+			StudentPage studentPage = new StudentPage();
+			Stage studentStage= new Stage();
+			studentPage.start(studentStage);
+			stage.close();
+		});
 		
 		//scene creation
 		Scene scene = new Scene(vbox, 600, 500);
