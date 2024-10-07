@@ -1,0 +1,55 @@
+/* styles.css */
+
+/* background color */
+.root
+{
+	-fx-background-color: #ab5a68;
+}
+
+/* labels */
+.label 
+{
+    -fx-font-size: 21px;
+    -fx-font-family: "Helvetica";
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+/* entry fields */
+.text-field, .password-field 
+{
+    -fx-pref-width: 220px;
+    -fx-padding: 8px;
+    -fx-font-size: 14px;
+    -fx-border-color: #a67c00;
+    -fx-background-color: #ffdc73;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+/* buttons */
+.button 
+{
+    -fx-font-size: 14px;
+    -fx-background-color: #ffbf00;
+    -fx-text-fill: white;
+    -fx-padding: 10px 20px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+    -fx-font-family: "Helvetica";
+}
+
+/* add a button hover */
+.button:hover 
+{
+    -fx-background-color: #ffdc73;
+}
+
+/* element spacing */
+.grid-pane 
+{
+    -fx-padding: 20;
+    -fx-hgap: 10;
+    -fx-vgap: 15;
+}
