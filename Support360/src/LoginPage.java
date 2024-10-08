@@ -71,6 +71,14 @@ public class LoginPage extends Application
 			stage.close();
 		});
 		
+		createAccount.setOnAction(event ->
+		{
+			AccountCreation accountCreation = new AccountCreation();
+			Stage accountCreationStage = new Stage();
+			accountCreation.start(accountCreationStage);
+			stage.close();
+		});
+		
 		/*
 		 * SCENE/STAGE
 		 */

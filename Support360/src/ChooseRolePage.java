@@ -42,6 +42,14 @@ public class ChooseRolePage extends Application
 			stage.close();
 		});
 		
+		instructorButton.setOnAction(event ->
+		{
+			InstructorPage instructorPage = new InstructorPage();
+			Stage instructorStage= new Stage();
+			instructorPage.start(instructorStage);
+			stage.close();
+		});
+		
 		//scene creation
 		Scene scene = new Scene(vbox, 600, 500);
 		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
