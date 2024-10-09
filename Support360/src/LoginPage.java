@@ -74,15 +74,28 @@ public class LoginPage extends Application {
 
                 // Get the user’s role based on their username and password
                 String role = dbHelper.getRole(userField.getText(), passField.getText());
+                // statement to see contents of the table
+                System.out.println(dbHelper.runSQLQuery("SELECT * FROM cse360users"));
 
                 if (role != null) {
                     if (role.equals("Admin")) {
                         // Admin login - skip OTP validation and proceed to finish account setup
                         loggedInUsername = userField.getText();
-                        FinishCreation finishAccountSetup = new FinishCreation();
-                        Stage finishAccountStage = new Stage();
-                        finishAccountSetup.start(finishAccountStage);
-                        stage.close();
+                        // finish account setup for admin only if not done yet
+                        String checkLastName = dbHelper.runSQLQuery("SELECT last_name FROM cse360users WHERE role = 'Admin'");
+//                        System.out.println("Last Name: " + checkLastName);  // Debugging line
+
+                        // Handle cases where last_name is NULL, the string "null", or an empty string
+                        if (checkLastName == "null" || checkLastName.equalsIgnoreCase("null") || checkLastName.trim().isEmpty()) {
+//                            System.out.println("Hi 1");
+                            FinishCreation finishAccountSetup = new FinishCreation();
+                            Stage finishAccountStage = new Stage();
+                            finishAccountSetup.start(finishAccountStage);
+                            stage.close();
+//                            System.out.println("Hi 2");
+                        }
+
+                        
                     } else {
                         // Non-admin (e.g., Student/Instructor) - Get the user ID and validate OTP
                         int userId = dbHelper.getUserIdByUsername(userField.getText());

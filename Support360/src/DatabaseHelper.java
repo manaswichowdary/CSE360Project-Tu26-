@@ -7,7 +7,7 @@ public class DatabaseHelper {
 
     // JDBC driver name and database URL
     static final String JDBC_DRIVER = "org.h2.Driver";
-    static final String DB_URL = "jdbc:h2:~/project1";  // Adjust this as needed
+    static final String DB_URL = "jdbc:h2:./database/project1_CSE360";
 
     // Database credentials
     static final String USER = "group26";
@@ -85,20 +85,32 @@ public class DatabaseHelper {
         return true;
     }
     
-    public void runSQLQuery(String query) throws SQLException {
+    public String runSQLQuery(String query) throws SQLException {
+        StringBuilder result = new StringBuilder();  // Use StringBuilder to accumulate the result
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnsNumber = rsmd.getColumnCount();
+            
+            // Iterate through the result set and accumulate the results
             while (rs.next()) {
                 for (int i = 1; i <= columnsNumber; i++) {
-                    if (i > 1) System.out.print(", ");
-                    System.out.print(rs.getString(i));
+                    if (i > 1) result.append(", ");  // Append commas between columns
+                    
+                    String value = rs.getString(i);  // Retrieve column data
+                    if (value == null) {
+                        result.append("");  // Append empty string if the value is NULL
+                    } else {
+                        result.append(value);  // Append the actual column data
+                    }
                 }
-                System.out.println();
+                result.append("\n");  // Add a newline after each row
             }
         }
+        return result.toString().trim();  // Return the accumulated result as a string, trimming any extra spaces
     }
+
+
 
 
     // Register the first user as Admin
