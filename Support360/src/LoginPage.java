@@ -7,93 +7,128 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import java.sql.*;
 
-public class LoginPage extends Application
-{
-	@Override
-	public void start(Stage stage)
-	{
-		stage.setTitle("Support360 Login Page");
-		
-		/*
-		 * PAGE LAYOUT
-		 */
-		
-		//set up page as grid
-		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.CENTER);
-		grid.getStyleClass().add("grid-pane");
-		
-		//Username label and entry field
-		Label userLabel = new Label("Username:");
-		userLabel.getStyleClass().add("label");
-		grid.add(userLabel, 0, 1);
-		TextField userField = new TextField();
-		userField.getStyleClass().add("text-field");
-		grid.add(userField, 1, 1);
-		
-		//Password label and entry field
-		Label passLabel = new Label("Password:");
-		passLabel.getStyleClass().add("label");
-		grid.add(passLabel, 0, 2);
-		PasswordField passField = new PasswordField();
-		passField.getStyleClass().add("password-field");
-		grid.add(passField, 1, 2);
-		
-		//login button
-		Button loginButton = new Button("Login");
-		loginButton.getStyleClass().add("button");
-		grid.add(loginButton, 1, 3);
-		
-		//One-time code account creation
-		Label otcLabel = new Label("One-time code:");
-		otcLabel.getStyleClass().add("label");
-		grid.add(otcLabel, 0, 4);
-		TextField otcField = new TextField();
-		otcField.getStyleClass().add("text-field");
-		grid.add(otcField, 1, 4);
-		
-		//create account button
-		Button createAccount = new Button("Create Account");
-		createAccount.getStyleClass().add("button");
-		grid.add(createAccount, 1, 5);
-		
-		/*
-		 * EVENT HANDLING
-		 */
-		
-		//handle login button
-		loginButton.setOnAction(event ->
-		{
-			ChooseRolePage chooseRolePage = new ChooseRolePage();
-			Stage chooseRoleStage = new Stage();
-			chooseRolePage.start(chooseRoleStage);
-			stage.close();
-		});
-		
-		createAccount.setOnAction(event ->
-		{
-			AccountCreation accountCreation = new AccountCreation();
-			Stage accountCreationStage = new Stage();
-			accountCreation.start(accountCreationStage);
-			stage.close();
-		});
-		
-		/*
-		 * SCENE/STAGE
-		 */
-		
-		//scene creation
-		Scene scene = new Scene(grid, 600, 500);
-		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-		
-		//show stage
-		stage.setScene(scene);
-		stage.show();
-		
-	}
-	public static void main(String[] args)
-	{
-		launch(args);
-	}
+public class LoginPage extends Application {
+
+    // Static variable to store the username of the logged-in user
+    public static String loggedInUsername;
+
+    @Override
+    public void start(Stage stage) {
+        stage.setTitle("Support360 Login Page");
+
+        /*
+         * PAGE LAYOUT
+         */
+
+        // Set up page as grid
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.getStyleClass().add("grid-pane");
+
+        // Username label and entry field
+        Label userLabel = new Label("Username:");
+        userLabel.getStyleClass().add("label");
+        grid.add(userLabel, 0, 1);
+        TextField userField = new TextField();
+        userField.getStyleClass().add("text-field");
+        grid.add(userField, 1, 1);
+
+        // Password label and entry field
+        Label passLabel = new Label("Password:");
+        passLabel.getStyleClass().add("label");
+        grid.add(passLabel, 0, 2);
+        PasswordField passField = new PasswordField();
+        passField.getStyleClass().add("password-field");
+        grid.add(passField, 1, 2);
+
+        // One-time code account creation
+        Label otcLabel = new Label("One-time code:");
+        otcLabel.getStyleClass().add("label");
+        grid.add(otcLabel, 0, 4);
+        TextField otcField = new TextField();
+        otcField.getStyleClass().add("text-field");
+        grid.add(otcField, 1, 4);
+
+        // Login button
+        Button loginButton = new Button("Login");
+        loginButton.getStyleClass().add("button");
+        grid.add(loginButton, 1, 5);
+
+        // Create account button
+        Button createAccount = new Button("Create Account");
+        createAccount.getStyleClass().add("button");
+        grid.add(createAccount, 1, 6);
+
+        /*
+         * EVENT HANDLING
+         */
+
+        // Handle login button
+        loginButton.setOnAction(event -> {
+            DatabaseHelper dbHelper = new DatabaseHelper();
+
+            try {
+                dbHelper.connectToDatabase();
+
+                // Get the user’s role based on their username and password
+                String role = dbHelper.getRole(userField.getText(), passField.getText());
+
+                if (role != null) {
+                    if (role.equals("Admin")) {
+                        // Admin login - skip OTP validation and proceed to finish account setup
+                        loggedInUsername = userField.getText();
+                        FinishCreation finishAccountSetup = new FinishCreation();
+                        Stage finishAccountStage = new Stage();
+                        finishAccountSetup.start(finishAccountStage);
+                        stage.close();
+                    } else {
+                        // Non-admin (e.g., Student/Instructor) - Get the user ID and validate OTP
+                        int userId = dbHelper.getUserIdByUsername(userField.getText());
+                        if (dbHelper.validateOTP(userId, otcField.getText())) {
+                            loggedInUsername = userField.getText();
+                            ChooseRolePage chooseRolePage = new ChooseRolePage();
+                            Stage chooseRoleStage = new Stage();
+                            chooseRolePage.start(chooseRoleStage);
+                            stage.close();
+                        } else {
+                            System.out.println("Invalid OTP.");
+                        }
+                    }
+                } else {
+                    System.out.println("Invalid login credentials.");
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } finally {
+                dbHelper.closeConnection();
+            }
+        });
+
+        // Handle create account button
+        createAccount.setOnAction(event -> {
+            AccountCreation accountCreation = new AccountCreation();
+            Stage accountCreationStage = new Stage();
+            accountCreation.start(accountCreationStage);
+            stage.close();
+        });
+
+        /*
+         * SCENE/STAGE
+         */
+
+        // Scene creation
+        Scene scene = new Scene(grid, 600, 500);
+        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+
+        // Show stage
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 }

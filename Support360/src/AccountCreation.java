@@ -7,105 +7,125 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import java.sql.*;
 
-public class AccountCreation extends Application
-{
-	@Override
-	public void start(Stage stage)
-	{
-		stage.setTitle("Support360 Account Creation");
-		
-		/*
-		 * PAGE LAYOUT
-		 */
-		
-		//set up page as grid
-		GridPane grid = new GridPane();
-		grid.setAlignment(Pos.CENTER);
-		grid.getStyleClass().add("grid-pane");
-		
-		//username
-		Label userLabel = new Label("Username:");
-		userLabel.getStyleClass().add("label");
-		grid.add(userLabel, 0, 1);
-		TextField userField = new TextField();
-		userField.getStyleClass().add("username-field");
-		grid.add(userField, 1, 1);
-		
-		//password 1
-		Label passLabel1 = new Label("Password:");
-		passLabel1.getStyleClass().add("label");
-		grid.add(passLabel1, 0, 2);
-		PasswordField passField1 = new PasswordField();
-		passField1.getStyleClass().add("password-field");
-		grid.add(passField1, 1, 2);
-		
-		//password 2
-		//Password label and entry field
-		Label passLabel2 = new Label("Confirm Password:");
-		passLabel2.getStyleClass().add("label");
-		grid.add(passLabel2, 0, 3);
-		PasswordField passField2 = new PasswordField();
-		passField2.getStyleClass().add("password-field");
-		grid.add(passField2, 1, 3);
-		
-		//password does not match label
-		Label passMatch = new Label("Warning: Passwords don't match.");
-		passMatch.getStyleClass().add("label");
-		grid.add(passMatch, 0, 4);
-		passMatch.setVisible(false);
-		
-		Label emptyWarn = new Label("Warning: All inputs required.");
-		emptyWarn.getStyleClass().add("label");
-		grid.add(emptyWarn, 0, 5);
-		emptyWarn.setVisible(false);
-		
-		Button createActButton = new Button("Create Account");
-		createActButton.getStyleClass().add("button");
-		grid.add(createActButton, 0, 6);
-		
-		/*
-		 * EVENT HANDLING
-		 */
-		
-		createActButton.setOnAction(event ->
-		{
-			if(userField.getText().equals("") || passField1.getText().equals("") || passField2.getText().equals("")) {
-				//error
-				emptyWarn.setVisible(true);
-				passMatch.setVisible(false);
-			} else if (passField1.getText().equals(passField2.getText()) != true) {
-				//if fields are not blank
-				//and if passwords match:
-				passMatch.setVisible(true);
-				emptyWarn.setVisible(false);
-			} else {
-				//save to database with incomplete flag and otp
-				LoginPage loginPage = new LoginPage();
-				Stage loginStage = new Stage();
-				loginPage.start(loginStage);
-				stage.close();
-			}
-		});
-		
-		//create attempt
-			//check if any fields are blank 
-			//check passwords validation
-		
-		/*
-		 * SCENE CREATION
-		 */
-		
-		Scene scene = new Scene(grid, 600, 500);
-		scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-		
-		//show stage
-		stage.setScene(scene);
-		stage.show();
-	}
-	
-	public static void main(String[] args)
-	{
-		launch(args);
-	}
+public class AccountCreation extends Application {
+
+    @Override
+    public void start(Stage stage) {
+        stage.setTitle("Support360 Account Creation");
+
+        /*
+         * PAGE LAYOUT
+         */
+
+        // Set up page as grid
+        GridPane grid = new GridPane();
+        grid.setAlignment(Pos.CENTER);
+        grid.getStyleClass().add("grid-pane");
+
+        // Username label and entry field
+        Label userLabel = new Label("Username:");
+        userLabel.getStyleClass().add("label");
+        grid.add(userLabel, 0, 1);
+        TextField userField = new TextField();
+        userField.getStyleClass().add("text-field");
+        grid.add(userField, 1, 1);
+
+        // Password label and entry field
+        Label passLabel1 = new Label("Password:");
+        passLabel1.getStyleClass().add("label");
+        grid.add(passLabel1, 0, 2);
+        PasswordField passField1 = new PasswordField();
+        passField1.getStyleClass().add("password-field");
+        grid.add(passField1, 1, 2);
+
+        // Confirm password label and entry field
+        Label passLabel2 = new Label("Confirm Password:");
+        passLabel2.getStyleClass().add("label");
+        grid.add(passLabel2, 0, 3);
+        PasswordField passField2 = new PasswordField();
+        passField2.getStyleClass().add("password-field");
+        grid.add(passField2, 1, 3);
+
+        // Warning label for mismatching passwords
+        Label passMatch = new Label("Warning: Passwords don't match.");
+        passMatch.getStyleClass().add("label");
+        passMatch.setVisible(false);
+        grid.add(passMatch, 0, 4);
+
+        // Empty field warning
+        Label emptyWarn = new Label("Warning: All fields are required.");
+        emptyWarn.getStyleClass().add("label");
+        emptyWarn.setVisible(false);
+        grid.add(emptyWarn, 0, 5);
+
+        // Create account button
+        Button createActButton = new Button("Create Account");
+        createActButton.getStyleClass().add("button");
+        grid.add(createActButton, 1, 6);
+
+        /*
+         * EVENT HANDLING
+         */
+
+        createActButton.setOnAction(event -> {
+            DatabaseHelper dbHelper = new DatabaseHelper();
+
+            String username = userField.getText();
+            String password1 = passField1.getText();
+            String password2 = passField2.getText();
+
+            // Check if fields are empty
+            if (username.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
+                emptyWarn.setVisible(true);
+                passMatch.setVisible(false);
+            } else if (!password1.equals(password2)) {
+                // Check if passwords match
+                passMatch.setVisible(true);
+                emptyWarn.setVisible(false);
+            } else {
+                emptyWarn.setVisible(false);
+                passMatch.setVisible(false);
+
+                try {
+                    dbHelper.connectToDatabase();
+
+                    // Check if the database is empty, and if so, register the first user as Admin
+                    if (dbHelper.isDatabaseEmpty()) {
+                        dbHelper.registerFirstUser(username, password1);
+                        System.out.println("Admin account created!");
+                    } else {
+                    	dbHelper.register(username, password1, "Student");
+                    }
+
+                    // Redirect to the login page after account creation
+                    LoginPage loginPage = new LoginPage();
+                    Stage loginStage = new Stage();
+                    loginPage.start(loginStage);
+                    stage.close();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                } finally {
+                    dbHelper.closeConnection();
+                }
+            }
+        });
+
+        /*
+         * SCENE CREATION
+         */
+
+        Scene scene = new Scene(grid, 600, 500);
+        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+
+        // Show stage
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 }
