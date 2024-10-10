@@ -115,6 +115,13 @@ public class LoginPage extends Application {
                 String role = dbHelper.getRole(userField.getText(), hashedPassword);
                 // statement to see contents of the table
                 System.out.println(dbHelper.runSQLQuery("SELECT * FROM cse360users"));
+                
+                //other tables for automated testing
+                dbHelper.runSQLQuery("SELECT * FROM user_roles");
+                
+                dbHelper.runSQLQuery("SELECT * FROM user_otps");
+                
+                dbHelper.runSQLQuery("SELECT * FROM invitations");
 
                 if (role != null) {
                     if (role.equals("Admin")) {
