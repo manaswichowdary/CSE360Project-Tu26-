@@ -429,15 +429,15 @@ public class DatabaseHelper {
      * @return
      * @throws SQLException
      */
-    public boolean validateOTP(int userId, String otp) throws SQLException {
-        String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setInt(1, userId);
-            pstmt.setString(2, otp);
-            ResultSet rs = pstmt.executeQuery();
-            return rs.next();  // Return true if the OTP matches
-        }
-    }
+//    public boolean validateOTP(int userId, String otp) throws SQLException {
+//        String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
+//        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+//            pstmt.setInt(1, userId);
+//            pstmt.setString(2, otp);
+//            ResultSet rs = pstmt.executeQuery();
+//            return rs.next();  // Return true if the OTP matches
+//        }
+//    }
 
 
     // Close database connection
@@ -467,15 +467,15 @@ public class DatabaseHelper {
         }
     }
     
-//    public boolean validateOTP(int userId, String otp) throws SQLException {
-//	    String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
-//	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-//	        pstmt.setInt(1, userId);
-//	        pstmt.setString(2, otp);
-//	        ResultSet rs = pstmt.executeQuery();
-//	        return rs.next();  // Return true if the OTP matches
-//	    }
-//	}
+    public boolean validateOTP(int userId, String otp) throws SQLException {
+	    String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setInt(1, userId);
+	        pstmt.setString(2, otp);
+	        ResultSet rs = pstmt.executeQuery();
+	        return rs.next();  // Return true if the OTP matches
+	    }
+	}
 
 }
         

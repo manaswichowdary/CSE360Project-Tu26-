@@ -84,6 +84,11 @@ public class LoginPage extends Application {
         createAccount.getStyleClass().add("button");
         grid.add(createAccount, 1, 6);
         
+        //reset password button
+        Button resetPass = new Button("Reset Password");
+        resetPass.getStyleClass().add("button");
+        grid.add(resetPass, 0, 7);
+        
         try {
         	dbHelper.connectToDatabase();
         	loginButton.setVisible(!dbHelper.isDatabaseEmpty());
@@ -180,6 +185,14 @@ public class LoginPage extends Application {
 	        }
             
         });
+        
+        resetPass.setOnAction(event -> {
+        	ResetPage resetPage = new ResetPage();
+            Stage resetStage = new Stage();
+            resetPage.start(resetStage);
+            stage.close();
+        });
+
 
         /*
          * SCENE/STAGE
