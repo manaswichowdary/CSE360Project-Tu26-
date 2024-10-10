@@ -14,8 +14,14 @@ import javafx.scene.layout.VBox;
 
 import java.util.Random;
 
+/**
+ * 
+ */
 public class OtpPage extends Application
 {
+	/**
+	 *
+	 */
 	@Override
 	public void start(Stage stage)
 	{
@@ -111,11 +117,18 @@ public class OtpPage extends Application
 		stage.show();
 	}
 	
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
 		launch(args);
 	}
 	
+	/**
+	 * @param length
+	 * @return
+	 */
 	public static String generateRandomString(int length) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         int charactersLength = characters.length();

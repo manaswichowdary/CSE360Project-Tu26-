@@ -2,10 +2,17 @@ package src;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * 
+ */
 public class PasswordUtil 
 {
 
     //password hashing
+    /**
+     * @param password
+     * @return
+     */
     public static String hashPassword(String password) 
     {
         try 

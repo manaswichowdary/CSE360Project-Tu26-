@@ -3,6 +3,9 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ */
 public class DatabaseHelper {
 
     // JDBC driver name and database URL
@@ -16,6 +19,9 @@ public class DatabaseHelper {
     private Connection connection = null;
     private Statement statement = null;
 
+    /**
+     * @throws SQLException
+     */
     public void connectToDatabase() throws SQLException {
         try {
             Class.forName(JDBC_DRIVER); // Load the JDBC driver
@@ -28,6 +34,9 @@ public class DatabaseHelper {
         }
     }
     
+    /**
+     * @return
+     */
     public Connection getConnection() {
         return connection;
     }
@@ -76,6 +85,10 @@ public class DatabaseHelper {
     }
 
     // Check if the database is empty
+    /**
+     * @return
+     * @throws SQLException
+     */
     public boolean isDatabaseEmpty() throws SQLException {
         String query = "SELECT COUNT(*) AS count FROM cse360users";
         ResultSet resultSet = statement.executeQuery(query);
@@ -85,6 +98,11 @@ public class DatabaseHelper {
         return true;
     }
     
+    /**
+     * @param query
+     * @return
+     * @throws SQLException
+     */
     public String runSQLQuery(String query) throws SQLException {
         StringBuilder result = new StringBuilder();  // Use StringBuilder to accumulate the result
         try (Statement stmt = connection.createStatement()) {
@@ -114,6 +132,11 @@ public class DatabaseHelper {
 
 
     // Register the first user as Admin
+    /**
+     * @param username
+     * @param password
+     * @throws SQLException
+     */
     public void registerFirstUser(String username, String password) throws SQLException {
         if (isDatabaseEmpty()) {
         	String insertAdmin = "INSERT INTO cse360users (USERNAME, PASSWORD, ROLE) VALUES (?, ?, ?)";
@@ -128,6 +151,12 @@ public class DatabaseHelper {
     }
 
     // Register a user with a given role
+    /**
+     * @param username
+     * @param password
+     * @param role
+     * @throws SQLException
+     */
     public void register(String username, String password, String role) throws SQLException {
     	String insertUser = "INSERT INTO cse360users (USERNAME, PASSWORD, ROLE) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
@@ -140,6 +169,14 @@ public class DatabaseHelper {
     }
 
     // Complete account setup by adding first name, email, etc.
+    /**
+     * @param userId
+     * @param firstName
+     * @param middleName
+     * @param lastName
+     * @param preferredFirstName
+     * @throws SQLException
+     */
     public void finishAccountSetup(int userId, String firstName, String middleName, String lastName, String preferredFirstName) throws SQLException {
         String updateUser = "UPDATE cse360users SET first_name = ?, middle_name = ?, last_name = ?, preferred_first_name = ? WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(updateUser)) {
@@ -153,6 +190,12 @@ public class DatabaseHelper {
         }
     }
     
+    /**
+     * @param username
+     * @param password
+     * @return
+     * @throws SQLException
+     */
     public String getRole(String username, String password) throws SQLException {
         String role = null;
         String query = "SELECT role FROM cse360users WHERE username = ? AND password = ?";
@@ -169,6 +212,13 @@ public class DatabaseHelper {
 
 
     // Login method for validating credentials
+    /**
+     * @param username
+     * @param password
+     * @param role
+     * @return
+     * @throws SQLException
+     */
     public boolean login(String username, String password, String role) throws SQLException {
         String query = "SELECT * FROM cse360users WHERE 'username' = ? AND 'password' = ? AND 'role' = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -182,6 +232,10 @@ public class DatabaseHelper {
     }
 
     // Check if the user exists
+    /**
+     * @param username
+     * @return
+     */
     public boolean doesUserExist(String username) {
         String query = "SELECT COUNT(*) FROM cse360users WHERE username = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -197,6 +251,11 @@ public class DatabaseHelper {
     }
 
     // Get roles for a given user
+    /**
+     * @param userId
+     * @return
+     * @throws SQLException
+     */
     public List<String> getUserRoles(int userId) throws SQLException {
         List<String> roles = new ArrayList<>();
         String query = "SELECT role FROM user_roles WHERE user_id = ?";
@@ -212,6 +271,11 @@ public class DatabaseHelper {
     }
 
     // Create invitation code
+    /**
+     * @param code
+     * @param roles
+     * @throws SQLException
+     */
     public void createInvitation(String code, String roles) throws SQLException {
         String insertCode = "INSERT INTO invitations (code, roles) VALUES (?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertCode)) {
@@ -223,6 +287,11 @@ public class DatabaseHelper {
     }
 
     // Validate invitation code
+    /**
+     * @param code
+     * @return
+     * @throws SQLException
+     */
     public String validateInvitation(String code) throws SQLException {
         String query = "SELECT roles FROM invitations WHERE code = ? AND used = FALSE";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -237,6 +306,10 @@ public class DatabaseHelper {
     }
 
     // Mark invitation as used
+    /**
+     * @param code
+     * @throws SQLException
+     */
     public void markInvitationUsed(String code) throws SQLException {
         String update = "UPDATE invitations SET used = TRUE WHERE code = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(update)) {
@@ -246,6 +319,12 @@ public class DatabaseHelper {
     }
 
     // Create password reset token
+    /**
+     * @param userId
+     * @param token
+     * @param expiration
+     * @throws SQLException
+     */
     public void createResetToken(int userId, String token, Timestamp expiration) throws SQLException {
         String insertToken = "INSERT INTO password_resets (user_id, reset_token, expiration) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertToken)) {
@@ -258,6 +337,11 @@ public class DatabaseHelper {
     }
 
     // Validate reset token
+    /**
+     * @param token
+     * @return
+     * @throws SQLException
+     */
     public boolean validateResetToken(String token) throws SQLException {
         String query = "SELECT * FROM password_resets WHERE reset_token = ? AND used = FALSE AND expiration > CURRENT_TIMESTAMP";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -269,6 +353,10 @@ public class DatabaseHelper {
     }
 
     // Mark reset token as used
+    /**
+     * @param token
+     * @throws SQLException
+     */
     public void markResetTokenUsed(String token) throws SQLException {
         String update = "UPDATE password_resets SET used = TRUE WHERE reset_token = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(update)) {
@@ -278,6 +366,10 @@ public class DatabaseHelper {
     }
 
     // Delete user
+    /**
+     * @param userId
+     * @throws SQLException
+     */
     public void deleteUser(int userId) throws SQLException {
         String deleteUser = "DELETE FROM cse360users WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(deleteUser)) {
@@ -288,12 +380,20 @@ public class DatabaseHelper {
     }
     
  // Method to generate a random 6-digit OTP
+    /**
+     * @return
+     */
     public String generateOTP() {
         int otp = (int)(Math.random() * 900000) + 100000;  // Generate random 6-digit number
         return String.valueOf(otp);
     }
 
     // Method to store OTP in the database
+    /**
+     * @param userId
+     * @param otp
+     * @throws SQLException
+     */
     public void storeOTP(int userId, String otp) throws SQLException {
         String insertOTP = "INSERT INTO user_otps (user_id, otp) VALUES (?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertOTP)) {
@@ -305,6 +405,11 @@ public class DatabaseHelper {
     }
 
     // Method to get user ID by username
+    /**
+     * @param username
+     * @return
+     * @throws SQLException
+     */
     public int getUserIdByUsername(String username) throws SQLException {
         String query = "SELECT id FROM cse360users WHERE username = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -318,6 +423,12 @@ public class DatabaseHelper {
     }
     
  // Validate the OTP for a user
+    /**
+     * @param userId
+     * @param otp
+     * @return
+     * @throws SQLException
+     */
     public boolean validateOTP(int userId, String otp) throws SQLException {
         String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -330,6 +441,9 @@ public class DatabaseHelper {
 
 
     // Close database connection
+    /**
+     * 
+     */
     public void closeConnection() {
         try {
             if (statement != null) statement.close();

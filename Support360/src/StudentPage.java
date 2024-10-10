@@ -8,8 +8,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
+/**
+ * 
+ */
 public class StudentPage extends Application
 {
+	/**
+	 *
+	 */
 	@Override
 	public void start(Stage stage)
 	{
@@ -61,6 +67,9 @@ public class StudentPage extends Application
 		stage.show();
 	}
 	
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
 		launch(args);

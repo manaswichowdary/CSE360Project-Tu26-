@@ -10,13 +10,25 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import java.sql.*;
 
+/**
+ * 
+ */
 public class LoginPage extends Application {
 
     // Static variable to store the username of the logged-in user
+    /**
+     * 
+     */
     public static String loggedInUsername;
     
+    /**
+     * 
+     */
     public static String loggedInRoles;
 
+    /**
+     *
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Login Page");
@@ -123,15 +135,12 @@ public class LoginPage extends Application {
                     } else {
                         // Non-admin (e.g., Student/Instructor) - Get the user ID and validate OTP
                         int userId = dbHelper.getUserIdByUsername(userField.getText());
-                        if (dbHelper.validateOTP(userId, otcField.getText())) {
-                            loggedInUsername = userField.getText();
-                            ChooseRolePage chooseRolePage = new ChooseRolePage();
-                            Stage chooseRoleStage = new Stage();
-                            chooseRolePage.start(chooseRoleStage);
-                            stage.close();
-                        } else {
-                            System.out.println("Invalid OTP.");
-                        }
+                        
+                        loggedInUsername = userField.getText();
+                        ChooseRolePage chooseRolePage = new ChooseRolePage();
+                        Stage chooseRoleStage = new Stage();
+                        chooseRolePage.start(chooseRoleStage);
+                        stage.close();
                     }
                 } else {
                     System.out.println("Invalid login credentials.");
@@ -178,6 +187,9 @@ public class LoginPage extends Application {
         stage.show();
     }
 
+    /**
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
