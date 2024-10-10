@@ -52,6 +52,7 @@ public class ChooseRolePage extends Application {
 
             // Now, fetch the roles for this userId
             List<String> roles = dbHelper.getUserRoles(userId);
+            System.out.println(roles);
 
             // Enable buttons only for the roles that the user has
             // to be implemented in PHASE 2
