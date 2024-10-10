@@ -62,15 +62,15 @@ public class LoginPage extends Application {
         // One-time code account creation
         Label otcLabel = new Label("One-time code:");
         otcLabel.getStyleClass().add("label");
-        grid.add(otcLabel, 0, 4);
+        grid.add(otcLabel, 0, 5);
         TextField otcField = new TextField();
         otcField.getStyleClass().add("text-field");
-        grid.add(otcField, 1, 4);
+        grid.add(otcField, 1, 5);
 
         // Login button
         Button loginButton = new Button("Login");
         loginButton.getStyleClass().add("button");
-        grid.add(loginButton, 1, 5);
+        grid.add(loginButton, 1, 4);
 
         // Create account button
         Button createAccount = new Button("Create Account");
