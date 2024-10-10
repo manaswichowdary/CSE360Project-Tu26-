@@ -34,6 +34,7 @@ public class ChooseRolePage extends Application {
         // Retrieve roles for the logged-in user
         DatabaseHelper dbHelper = new DatabaseHelper();
         String loggedInUsername = LoginPage.loggedInUsername;  // Fetch the username from LoginPage
+        System.out.println("Username: " + loggedInUsername);
 
         try {
             dbHelper.connectToDatabase();

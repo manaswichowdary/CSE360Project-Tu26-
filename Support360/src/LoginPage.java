@@ -71,14 +71,17 @@ public class LoginPage extends Application {
 
             try {
                 dbHelper.connectToDatabase();
+                
+                String hashedPassword = PasswordUtil.hashPassword(passField.getText());
 
                 // Get the user’s role based on their username and password
-                String role = dbHelper.getRole(userField.getText(), passField.getText());
+                String role = dbHelper.getRole(userField.getText(), hashedPassword);
                 // statement to see contents of the table
                 System.out.println(dbHelper.runSQLQuery("SELECT * FROM cse360users"));
 
                 if (role != null) {
                     if (role.equals("Admin")) {
+                    	System.out.println("user is admin");
                         // Admin login - skip OTP validation and proceed to finish account setup
                         loggedInUsername = userField.getText();
                         // finish account setup for admin only if not done yet
@@ -93,6 +96,13 @@ public class LoginPage extends Application {
                             finishAccountSetup.start(finishAccountStage);
                             stage.close();
 //                            System.out.println("Hi 2");
+                        }
+                        else
+                        {
+                        	ChooseRolePage chooseRole = new ChooseRolePage();
+                        	Stage chooseRoleStage = new Stage();
+                        	chooseRole.start(chooseRoleStage);
+                        	stage.close();
                         }
 
                         

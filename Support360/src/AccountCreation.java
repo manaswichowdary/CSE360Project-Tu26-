@@ -90,13 +90,16 @@ public class AccountCreation extends Application {
 
                 try {
                     dbHelper.connectToDatabase();
+                    
+                    //HASH PASSWORD
+                    String hashedPassword = PasswordUtil.hashPassword(password1);
 
                     // Check if the database is empty, and if so, register the first user as Admin
                     if (dbHelper.isDatabaseEmpty()) {
-                        dbHelper.registerFirstUser(username, password1);
+                        dbHelper.registerFirstUser(username, hashedPassword);
                         System.out.println("Admin account created!");
                     } else {
-                    	dbHelper.register(username, password1, "Student");
+                    	dbHelper.register(username, hashedPassword, "Student");
                     }
 
                     // Redirect to the login page after account creation
