@@ -10,8 +10,14 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
+/**
+ * 
+ */
 public class AdminPage extends Application
 {
+	/**
+	 *
+	 */
 	@Override
 	public void start(Stage stage)
 	{
@@ -100,6 +106,9 @@ public class AdminPage extends Application
 		stage.show();
 	}
 	
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args)
 	{
 		launch(args);

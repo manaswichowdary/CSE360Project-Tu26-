@@ -10,8 +10,14 @@ import javafx.scene.layout.GridPane;
 
 import java.sql.*;
 
+/**
+ * 
+ */
 public class FinishCreation extends Application {
 
+    /**
+     *
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Finish Creation");
@@ -135,6 +141,9 @@ public class FinishCreation extends Application {
         stage.show();
     }
 
+    /**
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }

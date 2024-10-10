@@ -9,8 +9,14 @@ import javafx.scene.layout.VBox;
 import java.sql.*;
 import java.util.List;
 
+/**
+ * 
+ */
 public class ChooseRolePage extends Application {
 
+    /**
+     *
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Choose Your Role");
@@ -125,6 +131,9 @@ public class ChooseRolePage extends Application {
         stage.show();
     }
 
+    /**
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
