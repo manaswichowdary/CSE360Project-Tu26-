@@ -119,10 +119,23 @@ public class LoginPage extends Application {
 
         // Handle create account button
         createAccount.setOnAction(event -> {
-            AccountCreation accountCreation = new AccountCreation();
-            Stage accountCreationStage = new Stage();
-            accountCreation.start(accountCreationStage);
-            stage.close();
+        	//verify code
+        	try {
+                dbHelper.connectToDatabase();
+                
+                String actRoles = dbHelper.validateInvitation(otcField.getText());
+                if(actRoles != null) {
+                	AccountCreation accountCreation = new AccountCreation();
+                    Stage accountCreationStage = new Stage();
+                    accountCreation.start(accountCreationStage);
+                    stage.close();
+                }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        } finally {
+	            dbHelper.closeConnection();
+	        }
+            
         });
 
         /*
