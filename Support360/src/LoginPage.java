@@ -13,6 +13,8 @@ public class LoginPage extends Application {
 
     // Static variable to store the username of the logged-in user
     public static String loggedInUsername;
+    
+    public static String loggedInRoles;
 
     @Override
     public void start(Stage stage) {
@@ -86,26 +88,12 @@ public class LoginPage extends Application {
                 String role = dbHelper.getRole(userField.getText(), passField.getText());
 
                 if (role != null) {
-                    if (role.equals("Admin")) {
-                        // Admin login - skip OTP validation and proceed to finish account setup
-                        loggedInUsername = userField.getText();
-                        FinishCreation finishAccountSetup = new FinishCreation();
-                        Stage finishAccountStage = new Stage();
-                        finishAccountSetup.start(finishAccountStage);
-                        stage.close();
-                    } else {
-                        // Non-admin (e.g., Student/Instructor) - Get the user ID and validate OTP
-                        int userId = dbHelper.getUserIdByUsername(userField.getText());
-                        if (dbHelper.validateOTP(userId, otcField.getText())) {
-                            loggedInUsername = userField.getText();
-                            ChooseRolePage chooseRolePage = new ChooseRolePage();
-                            Stage chooseRoleStage = new Stage();
-                            chooseRolePage.start(chooseRoleStage);
-                            stage.close();
-                        } else {
-                            System.out.println("Invalid OTP.");
-                        }
-                    }
+                    // Admin login - skip OTP validation and proceed to finish account setup
+                    loggedInUsername = userField.getText();
+                    FinishCreation finishAccountSetup = new FinishCreation();
+                    Stage finishAccountStage = new Stage();
+                    finishAccountSetup.start(finishAccountStage);
+                    stage.close();
                 } else {
                     System.out.println("Invalid login credentials.");
                 }
@@ -123,8 +111,8 @@ public class LoginPage extends Application {
         	try {
                 dbHelper.connectToDatabase();
                 
-                String actRoles = dbHelper.validateInvitation(otcField.getText());
-                if(actRoles != null) {
+                loggedInRoles = dbHelper.validateInvitation(otcField.getText());
+                if(loggedInRoles != null || dbHelper.isDatabaseEmpty()) {
                 	AccountCreation accountCreation = new AccountCreation();
                     Stage accountCreationStage = new Stage();
                     accountCreation.start(accountCreationStage);

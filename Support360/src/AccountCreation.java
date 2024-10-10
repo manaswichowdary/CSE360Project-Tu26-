@@ -96,7 +96,7 @@ public class AccountCreation extends Application {
                         dbHelper.registerFirstUser(username, password1);
                         System.out.println("Admin account created!");
                     } else {
-                    	dbHelper.register(username, password1, "Student");
+                    	dbHelper.register(username, password1, LoginPage.loggedInRoles);
                     }
 
                     // Redirect to the login page after account creation
