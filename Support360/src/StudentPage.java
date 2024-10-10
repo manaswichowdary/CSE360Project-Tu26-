@@ -9,12 +9,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 /**
- * 
+ * StudentPage class for the Support360 application.
+ * This class represents the student interface
  */
 public class StudentPage extends Application
 {
 	/**
-	 *
+	 *The main entry point for the JavaFX application.
+     * This method sets up the user interface for the student page, allowing the student to search for help, view their profile, and log out.
+     * 
+     * @param stage The primary stage for this application
 	 */
 	@Override
 	public void start(Stage stage)

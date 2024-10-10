@@ -3,15 +3,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * 
+ * Utility to hash passwords
  */
 public class PasswordUtil 
 {
 
     //password hashing
     /**
-     * @param password
-     * @return
+     * @param password the password we hash
+     * @return the hashed item we return
      */
     public static String hashPassword(String password) 
     {

@@ -192,7 +192,7 @@ public class AdminPage extends Application
 	/**
 	 * The main method for launching the JavaFX application
 	 * 
-	 * @param args
+	 * @param args default args parameter
 	 */
 	public static void main(String[] args)
 	{

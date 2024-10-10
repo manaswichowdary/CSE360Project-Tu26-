@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ * Database functions throughout the whole program
  */
 public class DatabaseHelper {
 
@@ -456,5 +456,26 @@ public class DatabaseHelper {
         	se.printStackTrace();
         }
     }
+    
+    public void updateUserPassword(int userId, String newPassword) throws SQLException {
+        String query = "UPDATE cse360users SET password = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setInt(2, userId);
+            pstmt.executeUpdate();
+            System.out.println("Password updated.");
+        }
+    }
+    
+//    public boolean validateOTP(int userId, String otp) throws SQLException {
+//	    String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
+//	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+//	        pstmt.setInt(1, userId);
+//	        pstmt.setString(2, otp);
+//	        ResultSet rs = pstmt.executeQuery();
+//	        return rs.next();  // Return true if the OTP matches
+//	    }
+//	}
+
 }
         

@@ -11,23 +11,30 @@ import javafx.scene.layout.GridPane;
 import java.sql.*;
 
 /**
- * 
+ * LoginPage class for the Support360 application.
+ * This class handles user authentication by verifying login credentials
  */
 public class LoginPage extends Application {
 
-    // Static variable to store the username of the logged-in user
     /**
-     * 
+     * Static variable to store the username of the logged-in user
+    /**
+     * The username of the currently logged-in user.
      */
     public static String loggedInUsername;
     
     /**
-     * 
+     * Static variable to store the role(s) of the logged-in user
+    /**
+     * The roles of the currently logged-in user.
      */
     public static String loggedInRoles;
 
     /**
-     *
+     * main entry point for the JavaFX application.
+     * This method sets up the login page user interface, allowing users to enter their username, password, and one-time code for account creation.
+     * 
+     * @param stage The primary stage for this application
      */
     @Override
     public void start(Stage stage) {
