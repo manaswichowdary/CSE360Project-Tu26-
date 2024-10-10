@@ -11,12 +11,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 /**
- * 
+ * AdminPage class for the Support360 application.
+ * This class represents the administrative interface
  */
 public class AdminPage extends Application
 {
 	/**
-	 *
+	 *The main entry point for the JavaFX application.
+     * This method sets up the administrative user interface
+     * 
+     * @param stage The primary stage for this application
 	 */
 	@Override
 	public void start(Stage stage)
@@ -107,6 +111,8 @@ public class AdminPage extends Application
 	}
 	
 	/**
+	 * The main method for launching the JavaFX application
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args)

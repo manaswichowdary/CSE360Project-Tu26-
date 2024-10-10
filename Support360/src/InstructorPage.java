@@ -9,12 +9,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 
 /**
- * 
+ * InstructorPage class for the Support360 application.
+ * This class represents the instructor interface
  */
 public class InstructorPage extends Application
 {
 	/**
-	 *
+	 *The main entry point for the JavaFX application.
+     * This method sets up the user interface for the instructor page
+     * 
+     * @param stage The primary stage for this application
 	 */
 	@Override
 	public void start(Stage stage)
@@ -68,7 +72,9 @@ public class InstructorPage extends Application
 	}
 	
 	/**
-	 * @param args
+	 * Main method for launching the JavaFX application.
+     * 
+     * @param args command line arguments
 	 */
 	public static void main(String[] args)
 	{
