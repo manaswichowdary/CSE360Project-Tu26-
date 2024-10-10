@@ -14,6 +14,8 @@ public class LoginPage extends Application {
 
     // Static variable to store the username of the logged-in user
     public static String loggedInUsername;
+    
+    public static String loggedInRoles;
 
     @Override
     public void start(Stage stage) {
@@ -102,6 +104,8 @@ public class LoginPage extends Application {
                         // Handle cases where last_name is NULL, the string "null", or an empty string
                         if (checkLastName == "null" || checkLastName.equalsIgnoreCase("null") || checkLastName.trim().isEmpty()) {
 //                            System.out.println("Hi 1");
+                        	// Admin login - skip OTP validation and proceed to finish account setup
+                            loggedInUsername = userField.getText();
                             FinishCreation finishAccountSetup = new FinishCreation();
                             Stage finishAccountStage = new Stage();
                             finishAccountSetup.start(finishAccountStage);
@@ -146,8 +150,8 @@ public class LoginPage extends Application {
         	try {
                 dbHelper.connectToDatabase();
                 
-                String actRoles = dbHelper.validateInvitation(otcField.getText());
-                if(actRoles != null) {
+                loggedInRoles = dbHelper.validateInvitation(otcField.getText());
+                if(loggedInRoles != null || dbHelper.isDatabaseEmpty()) {
                 	AccountCreation accountCreation = new AccountCreation();
                     Stage accountCreationStage = new Stage();
                     accountCreation.start(accountCreationStage);
