@@ -10,12 +10,16 @@ import java.sql.*;
 import java.util.List;
 
 /**
- * 
+ * ChooseRolePage class for the Support360 application.
+ * This class allows a user to select their role
  */
 public class ChooseRolePage extends Application {
 
     /**
-     *
+     *The main entry point for the JavaFX application.
+     * This method sets up the role selection user interface
+     * 
+     * @param stage The primary stage for this application
      */
     @Override
     public void start(Stage stage) {
@@ -47,34 +51,27 @@ public class ChooseRolePage extends Application {
             dbHelper.connectToDatabase();
 
             // Query to get the user ID from the username
-            String query = "SELECT id FROM cse360users WHERE username = ?";
-            int userId = -1;
+            String query = String.format("SELECT role FROM cse360users WHERE username = '%s'", LoginPage.loggedInUsername);
 
-            try (PreparedStatement pstmt = dbHelper.getConnection().prepareStatement(query)) {
-                pstmt.setString(1, loggedInUsername);
-                ResultSet rs = pstmt.executeQuery();
-                if (rs.next()) {
-                    userId = rs.getInt("id");  // Get the user ID based on the username
-                }
-            }
+            String roles = dbHelper.runSQLQuery(query);
 
             // Now, fetch the roles for this userId
-            List<String> roles = dbHelper.getUserRoles(userId);
+            
             System.out.println(roles);
 
             // Enable buttons only for the roles that the user has
-            // to be implemented in PHASE 2
-//            if (roles.contains("Admin")) {
-//                adminButton.setDisable(false);
-//                adminButton.setOnAction(event -> {
-//                    AdminPage adminPage = new AdminPage();
-//                    Stage adminStage = new Stage();
-//                    adminPage.start(adminStage);
-//                    stage.close();
-//                });
-//            } else {
-//                adminButton.setDisable(true); // Disable the Admin button if the user is not an admin
-//            }
+            //to be implemented in PHASE 2
+            if (roles.contains("Admin")) {
+                adminButton.setDisable(false);
+                adminButton.setOnAction(event -> {
+                    AdminPage adminPage = new AdminPage();
+                    Stage adminStage = new Stage();
+                    adminPage.start(adminStage);
+                    stage.close();
+                });
+            } else {
+                adminButton.setDisable(true); // Disable the Admin button if the user is not an admin
+            }
 
             if (roles.contains("Student")) {
                 studentButton.setDisable(false);
@@ -132,7 +129,9 @@ public class ChooseRolePage extends Application {
     }
 
     /**
-     * @param args
+     *  main method for launching the JavaFX application.
+     * 
+     * @param args command line arguments
      */
     public static void main(String[] args) {
         launch(args);

@@ -11,12 +11,14 @@ import javafx.scene.layout.GridPane;
 import java.sql.*;
 
 /**
- * 
+ * FinishCreation class for the Support360 application.
+ * This class handles the final step in the account creation process
  */
 public class FinishCreation extends Application {
 
     /**
-     *
+     *The main entry point for the JavaFX application.
+     * This method sets up the user interface for the final account setup
      */
     @Override
     public void start(Stage stage) {
@@ -142,7 +144,9 @@ public class FinishCreation extends Application {
     }
 
     /**
-     * @param args
+     * Main method for launching the JavaFX application
+     * 
+     * @param args command line arguments
      */
     public static void main(String[] args) {
         launch(args);

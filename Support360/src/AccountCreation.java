@@ -10,8 +10,16 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import java.sql.*;
 
+/**
+ * AccountCreation class for the Support360 application.
+ * This class handles the account creation page, allowing users to register
+ */
 public class AccountCreation extends Application {
 
+    /**
+     *The main entry point for the JavaFX application.
+     * This method sets up the account creation user interface and handles user input validation.
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Account Creation");
@@ -68,6 +76,10 @@ public class AccountCreation extends Application {
 
         /*
          * EVENT HANDLING
+         * 
+         * Set the behavior for the "Create Account" button.
+         * This includes validating the input fields, checking if passwords match,
+         * and storing the user credentials in the database.
          */
 
         createActButton.setOnAction(event -> {
@@ -129,6 +141,10 @@ public class AccountCreation extends Application {
         stage.show();
     }
 
+    /**
+     * Main method for launching the JavaFX application
+     * @param args basic arg param
+     */
     public static void main(String[] args) {
         launch(args);
     }
