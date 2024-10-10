@@ -1,3 +1,4 @@
+package src;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,6 +18,7 @@ public class LoginPage extends Application {
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Login Page");
+        DatabaseHelper dbHelper = new DatabaseHelper();
 
         /*
          * PAGE LAYOUT
@@ -60,6 +62,17 @@ public class LoginPage extends Application {
         Button createAccount = new Button("Create Account");
         createAccount.getStyleClass().add("button");
         grid.add(createAccount, 1, 6);
+        
+        try {
+        	dbHelper.connectToDatabase();
+        	loginButton.setVisible(!dbHelper.isDatabaseEmpty());
+        	otcLabel.setVisible(!dbHelper.isDatabaseEmpty());
+        	otcField.setVisible(!dbHelper.isDatabaseEmpty());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            dbHelper.closeConnection();
+        }
 
         /*
          * EVENT HANDLING
@@ -67,8 +80,6 @@ public class LoginPage extends Application {
 
         // Handle login button
         loginButton.setOnAction(event -> {
-            DatabaseHelper dbHelper = new DatabaseHelper();
-
             try {
                 dbHelper.connectToDatabase();
                 
@@ -105,7 +116,6 @@ public class LoginPage extends Application {
                         	stage.close();
                         }
 
-                        
                     } else {
                         // Non-admin (e.g., Student/Instructor) - Get the user ID and validate OTP
                         int userId = dbHelper.getUserIdByUsername(userField.getText());
@@ -132,10 +142,23 @@ public class LoginPage extends Application {
 
         // Handle create account button
         createAccount.setOnAction(event -> {
-            AccountCreation accountCreation = new AccountCreation();
-            Stage accountCreationStage = new Stage();
-            accountCreation.start(accountCreationStage);
-            stage.close();
+        	//verify code
+        	try {
+                dbHelper.connectToDatabase();
+                
+                String actRoles = dbHelper.validateInvitation(otcField.getText());
+                if(actRoles != null) {
+                	AccountCreation accountCreation = new AccountCreation();
+                    Stage accountCreationStage = new Stage();
+                    accountCreation.start(accountCreationStage);
+                    stage.close();
+                }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        } finally {
+	            dbHelper.closeConnection();
+	        }
+            
         });
 
         /*

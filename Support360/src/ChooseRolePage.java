@@ -1,3 +1,4 @@
+package src;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -97,6 +98,18 @@ public class ChooseRolePage extends Application {
         } finally {
             dbHelper.closeConnection();
         }
+        
+        /*
+         * EVENT HANDLING
+         */
+        
+        adminButton.setOnAction(event ->
+		{
+			AdminPage adminPage = new AdminPage();
+			Stage adminStage= new Stage();
+			adminPage.start(adminStage);
+			stage.close();
+		});
 
         /*
          * SCENE CREATION
