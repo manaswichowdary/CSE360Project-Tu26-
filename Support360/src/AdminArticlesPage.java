@@ -47,7 +47,7 @@ public class AdminArticlesPage extends Application
         grid.add(header, 0, 0);
 
         TextField searchField = new TextField();
-        searchField.setPromptText("Search articles...");
+        searchField.setPromptText("search for articles...");
         searchField.getStyleClass().add("text-field");
         grid.add(searchField, 0, 1);
 
@@ -69,12 +69,12 @@ public class AdminArticlesPage extends Application
         grid.add(descriptionField, 0, 4);
 
         TextField keywordsField = new TextField();
-        keywordsField.setPromptText("Keywords (comma separated)");
+        keywordsField.setPromptText("keywords");
         keywordsField.getStyleClass().add("text-field");
         grid.add(keywordsField, 0, 5);
 
         TextField bodyField = new TextField();
-        bodyField.setPromptText("Body");
+        bodyField.setPromptText("article content");
         bodyField.getStyleClass().add("text-field");
         grid.add(bodyField, 0, 6);
 
