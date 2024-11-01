@@ -1,5 +1,5 @@
 package src;
-
+import java.sql.*;
 import java.sql.SQLException;
 import java.util.List;
 import javax.crypto.SecretKey;
@@ -93,10 +93,18 @@ public class AdminArticlesPage extends Application
         Button backupButton = new Button("Backup Articles");
         backupButton.getStyleClass().add("button");
         grid.add(backupButton, 1, 8);
+        
+        Button importButton = new Button("Import Articles");
+        importButton.getStyleClass().add("button");
+        grid.add(importButton, 2, 8);
 
         Button backButton = new Button("Back");
         backButton.getStyleClass().add("button");
         grid.add(backButton, 0, 9);
+        
+        Button displayButton = new Button("Display");
+        displayButton.getStyleClass().add("button");
+        grid.add(displayButton, 0, 10);
 
         searchButton.setOnAction(event -> 
         {
@@ -186,13 +194,52 @@ public class AdminArticlesPage extends Application
             try 
             {
                 articleDbHelper.connectToDatabase();
-                articleDbHelper.backupArticles();
+                articleDbHelper.backupArticles("test.txt");
+            } catch (SQLException e) 
+            {
+                e.printStackTrace();
+            } catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally 
+            {
+            	System.out.println("articles backed up");
+                articleDbHelper.closeConnection();
+            }
+        });
+        
+        importButton.setOnAction(event -> 
+        {
+            try 
+            {
+                articleDbHelper.connectToDatabase();
+                articleDbHelper.importArticles("test.txt");
+            } catch (SQLException e) 
+            {
+                e.printStackTrace();
+            } catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally 
+            {
+            	System.out.println("articles imported");
+                articleDbHelper.closeConnection();
+            }
+        });
+        
+        displayButton.setOnAction(event -> 
+        {
+        	String selectedArticle = articleListView.getSelectionModel().getSelectedItem();
+            try 
+            {
+                articleDbHelper.connectToDatabase();
+                articleDbHelper.displayArticle(selectedArticle);
             } catch (SQLException e) 
             {
                 e.printStackTrace();
             } finally 
             {
-            	System.out.println("articles backed up");
+            	System.out.println("articles printed up");
                 articleDbHelper.closeConnection();
             }
         });
