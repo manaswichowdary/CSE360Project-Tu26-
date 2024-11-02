@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ * Database functions throughout the whole program
  */
 public class DatabaseHelper {
 
     // JDBC driver name and database URL
     static final String JDBC_DRIVER = "org.h2.Driver";
-    static final String DB_URL = "jdbc:h2:./database/project1_CSE360m3";
+    static final String DB_URL = "jdbc:h2:./database/project1_CSE360m4";
 
     // Database credentials
     static final String USER = "group26";
@@ -72,6 +72,7 @@ public class DatabaseHelper {
         String invitationTable = "CREATE TABLE IF NOT EXISTS invitations ("
                 + "code VARCHAR(100) PRIMARY KEY, "
                 + "roles VARCHAR(100), "
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                 + "used BOOLEAN DEFAULT FALSE)";
         statement.execute(invitationTable);
 
@@ -277,12 +278,12 @@ public class DatabaseHelper {
      * @throws SQLException
      */
     public void createInvitation(String code, String roles) throws SQLException {
-        String insertCode = "INSERT INTO invitations (code, roles) VALUES (?, ?)";
+        String insertCode = "INSERT INTO invitations (code, roles, used) VALUES (?, ?, FALSE)";
         try (PreparedStatement pstmt = connection.prepareStatement(insertCode)) {
             pstmt.setString(1, code);
             pstmt.setString(2, roles);
             pstmt.executeUpdate();
-            System.out.println("Invitation code created.");
+            System.out.println("Invitation code created: " + code + " with roles: " + roles);
         }
     }
 
@@ -384,7 +385,7 @@ public class DatabaseHelper {
      * @return
      */
     public String generateOTP() {
-        int otp = (int)(Math.random() * 900000) + 100000;  // Generate random 6-digit number
+        int otp = (int)(Math.random() * 900000) + 100000;  
         return String.valueOf(otp);
     }
 
@@ -429,15 +430,15 @@ public class DatabaseHelper {
      * @return
      * @throws SQLException
      */
-    public boolean validateOTP(int userId, String otp) throws SQLException {
-        String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setInt(1, userId);
-            pstmt.setString(2, otp);
-            ResultSet rs = pstmt.executeQuery();
-            return rs.next();  // Return true if the OTP matches
-        }
-    }
+//    public boolean validateOTP(int userId, String otp) throws SQLException {
+//        String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
+//        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+//            pstmt.setInt(1, userId);
+//            pstmt.setString(2, otp);
+//            ResultSet rs = pstmt.executeQuery();
+//            return rs.next();  // Return true if the OTP matches
+//        }
+//    }
 
 
     // Close database connection
@@ -456,5 +457,26 @@ public class DatabaseHelper {
         	se.printStackTrace();
         }
     }
+    
+    public void updateUserPassword(int userId, String newPassword) throws SQLException {
+        String query = "UPDATE cse360users SET password = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, newPassword);
+            pstmt.setInt(2, userId);
+            pstmt.executeUpdate();
+            System.out.println("Password updated.");
+        }
+    }
+    
+    public boolean validateOTP(int userId, String otp) throws SQLException {
+	    String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setInt(1, userId);
+	        pstmt.setString(2, otp);
+	        ResultSet rs = pstmt.executeQuery();
+	        return rs.next();  // Return true if the OTP matches
+	    }
+	}
+
 }
         

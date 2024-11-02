@@ -15,12 +15,14 @@ import javafx.scene.layout.VBox;
 import java.util.Random;
 
 /**
- * 
+ * OtpPage class for the Support360 application.
+ * This class generates a one-time password (OTP) for account creation.
  */
 public class OtpPage extends Application
 {
 	/**
-	 *
+	 *The main entry point for the JavaFX application.
+     * This method sets up the user interface for generating a one-time password
 	 */
 	@Override
 	public void start(Stage stage)
@@ -145,4 +147,7 @@ public class OtpPage extends Application
         // Return the random string as a new String object
         return new String(randomString);
     }
+	
+	
+
 }

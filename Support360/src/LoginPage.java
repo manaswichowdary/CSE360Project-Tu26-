@@ -11,23 +11,30 @@ import javafx.scene.layout.GridPane;
 import java.sql.*;
 
 /**
- * 
+ * LoginPage class for the Support360 application.
+ * This class handles user authentication by verifying login credentials
  */
 public class LoginPage extends Application {
 
-    // Static variable to store the username of the logged-in user
     /**
-     * 
+     * Static variable to store the username of the logged-in user
+    /**
+     * The username of the currently logged-in user.
      */
     public static String loggedInUsername;
     
     /**
-     * 
+     * Static variable to store the role(s) of the logged-in user
+    /**
+     * The roles of the currently logged-in user.
      */
     public static String loggedInRoles;
 
     /**
-     *
+     * main entry point for the JavaFX application.
+     * This method sets up the login page user interface, allowing users to enter their username, password, and one-time code for account creation.
+     * 
+     * @param stage The primary stage for this application
      */
     @Override
     public void start(Stage stage) {
@@ -62,20 +69,25 @@ public class LoginPage extends Application {
         // One-time code account creation
         Label otcLabel = new Label("One-time code:");
         otcLabel.getStyleClass().add("label");
-        grid.add(otcLabel, 0, 4);
+        grid.add(otcLabel, 0, 5);
         TextField otcField = new TextField();
         otcField.getStyleClass().add("text-field");
-        grid.add(otcField, 1, 4);
+        grid.add(otcField, 1, 5);
 
         // Login button
         Button loginButton = new Button("Login");
         loginButton.getStyleClass().add("button");
-        grid.add(loginButton, 1, 5);
+        grid.add(loginButton, 1, 4);
 
         // Create account button
         Button createAccount = new Button("Create Account");
         createAccount.getStyleClass().add("button");
         grid.add(createAccount, 1, 6);
+        
+        //reset password button
+        Button resetPass = new Button("Reset Password");
+        resetPass.getStyleClass().add("button");
+        grid.add(resetPass, 0, 7);
         
         try {
         	dbHelper.connectToDatabase();
@@ -103,6 +115,13 @@ public class LoginPage extends Application {
                 String role = dbHelper.getRole(userField.getText(), hashedPassword);
                 // statement to see contents of the table
                 System.out.println(dbHelper.runSQLQuery("SELECT * FROM cse360users"));
+                
+                //other tables for automated testing
+                dbHelper.runSQLQuery("SELECT * FROM user_roles");
+                
+                dbHelper.runSQLQuery("SELECT * FROM user_otps");
+                
+                dbHelper.runSQLQuery("SELECT * FROM invitations");
 
                 if (role != null) {
                     if (role.equals("Admin")) {
@@ -173,6 +192,14 @@ public class LoginPage extends Application {
 	        }
             
         });
+        
+        resetPass.setOnAction(event -> {
+        	ResetPage resetPage = new ResetPage();
+            Stage resetStage = new Stage();
+            resetPage.start(resetStage);
+            stage.close();
+        });
+
 
         /*
          * SCENE/STAGE

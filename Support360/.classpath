@@ -16,7 +16,7 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/maddoxpealock/ASU-CSE360/h2/bin/h2-2.3.232.jar">
+	<classpathentry kind="lib" path="C:/Users/there/H2/bin/h2-2.3.232.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
