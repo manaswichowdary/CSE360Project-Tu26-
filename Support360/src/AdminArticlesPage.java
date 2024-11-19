@@ -1,358 +1,372 @@
 package src;
 import java.sql.*;
-import java.sql.SQLException;
-import java.util.List;
 import javax.crypto.SecretKey;
 import javafx.application.Application;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
+import javafx.collections.FXCollections;
+import java.util.*;
 
-/**
- * UI for admin articles management
- */
-public class AdminArticlesPage extends Application 
-{
-
+public class AdminArticlesPage extends Application {
     private ArticleDatabaseHelper articleDbHelper = new ArticleDatabaseHelper();
     private SecretKey secretKey;
 
-    public AdminArticlesPage() 
-    {
-        try 
-        {
+    public AdminArticlesPage() {
+        try {
             this.secretKey = ArticleEncryptionUtils.getAESKeyFromPassphrase("group26key");
-        } catch (Exception e) 
-        {
+        } catch (Exception e) {
             e.printStackTrace();
-            
-            System.out.println("AdminArticlesPage fail");
+            System.out.println("AdminArticlesPage initialization failed");
         }
-    
     }
 
     @Override
-    public void start(Stage stage) 
-    {
-    	
+    public void start(Stage stage) {
         stage.setTitle("Support360 Admin - Manage Articles");
 
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-        grid.getStyleClass().add("grid-pane");
+        VBox mainLayout = new VBox(10);
+        mainLayout.setStyle("-fx-background-color: #A15757;");
+        
+        HBox topButtons = new HBox(10);
+        topButtons.setAlignment(Pos.CENTER_RIGHT);
+        topButtons.setPadding(new Insets(10));
+        
+        Button backButton = new Button("Back to Admin Page");
+        backButton.setStyle("-fx-background-color: #FFB300;"); 
+        
+        Button logoutButton = new Button("Logout");
+        logoutButton.setStyle("-fx-background-color: #FFB300;"); 
+        
+        topButtons.getChildren().addAll(backButton, logoutButton);
+
+        setupArticleManagement(mainLayout);
+        mainLayout.getChildren().add(0, topButtons);
+
+        backButton.setOnAction(event -> {
+            AdminPage adminPage = new AdminPage();
+            Stage adminStage = new Stage();
+            adminPage.start(adminStage);
+            stage.close();
+        });
+
+        logoutButton.setOnAction(event -> {
+            LoginPage loginPage = new LoginPage();
+            Stage loginStage = new Stage();
+            loginPage.start(loginStage);
+            LoginPage.loggedInUsername = null;
+            stage.close();
+        });
+
+        Scene scene = new Scene(mainLayout, 800, 700);
+        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public void setupArticleManagement(VBox container) {
+        container.setSpacing(10);
+        container.setPadding(new Insets(20));
 
         Label header = new Label("Manage Help Articles");
-        header.getStyleClass().add("label");
-        grid.add(header, 0, 0);
+        header.getStyleClass().add("header-label");
+        header.setStyle("-fx-text-fill: white; -fx-font-size: 24px;");
+
+        HBox searchBox = new HBox(10);
+        searchBox.setAlignment(Pos.CENTER);
 
         TextField searchField = new TextField();
-        searchField.setPromptText("search...");
-        searchField.getStyleClass().add("text-field");
-        grid.add(searchField, 0, 1);
+        searchField.setPromptText("Search articles...");
+        searchField.setPrefWidth(300);
+
+        ComboBox<String> levelComboBox = new ComboBox<>(FXCollections.observableArrayList(
+            "all", "beginner", "intermediate", "advanced", "expert"
+        ));
+        levelComboBox.setValue("all");
+        levelComboBox.setStyle("-fx-background-color: white;");
 
         Button searchButton = new Button("Search");
-        searchButton.getStyleClass().add("button");
-        grid.add(searchButton, 1, 1);
+        searchButton.setStyle("-fx-background-color: #FFB300;");
+
+        searchBox.getChildren().addAll(searchField, levelComboBox, searchButton);
 
         ListView<String> articleListView = new ListView<>();
-        grid.add(articleListView, 0, 2, 2, 1);
+        articleListView.setPrefHeight(200);
+        articleListView.setStyle("-fx-control-inner-background: #ffffff;");
+
+        VBox inputFields = new VBox(10);
+        inputFields.setStyle("-fx-spacing: 10;");
 
         TextField titleField = new TextField();
         titleField.setPromptText("Title");
-        titleField.getStyleClass().add("text-field");
-        grid.add(titleField, 0, 3);
+        titleField.setStyle("-fx-prompt-text-fill: #666666;");
 
         TextField descriptionField = new TextField();
         descriptionField.setPromptText("Description");
-        descriptionField.getStyleClass().add("text-field");
-        grid.add(descriptionField, 0, 4);
+        descriptionField.setStyle("-fx-prompt-text-fill: #666666;");
 
         TextField keywordsField = new TextField();
-        keywordsField.setPromptText("keywords");
-        keywordsField.getStyleClass().add("text-field");
-        grid.add(keywordsField, 0, 5);
+        keywordsField.setPromptText("Keywords (comma-separated)");
+        keywordsField.setStyle("-fx-prompt-text-fill: #666666;");
 
-        TextField bodyField = new TextField();
-        bodyField.setPromptText("article content");
-        bodyField.getStyleClass().add("text-field");
-        grid.add(bodyField, 0, 6);
-        
+        TextArea bodyField = new TextArea();
+        bodyField.setPromptText("Article content");
+        bodyField.setWrapText(true);
+        bodyField.setPrefRowCount(5);
+        bodyField.setStyle("-fx-prompt-text-fill: #666666;");
+
+        inputFields.getChildren().addAll(
+            new Label("Title:"), titleField,
+            new Label("Description:"), descriptionField,
+            new Label("Keywords:"), keywordsField,
+            new Label("Content:"), bodyField
+        );
+
+        inputFields.getChildren().filtered(node -> node instanceof Label)
+            .forEach(node -> node.setStyle("-fx-text-fill: white;"));
+
+        HBox mainButtons = new HBox(10);
+        mainButtons.setAlignment(Pos.CENTER);
 
         Button addArticleButton = new Button("Add Article");
-        addArticleButton.getStyleClass().add("button");
-        grid.add(addArticleButton, 0, 7);
-
         Button updateArticleButton = new Button("Update Article");
-        updateArticleButton.getStyleClass().add("button");
-        grid.add(updateArticleButton, 1, 7);
-
         Button deleteArticleButton = new Button("Delete Article");
-        deleteArticleButton.getStyleClass().add("button");
-        grid.add(deleteArticleButton, 0, 8);
+        Button displayButton = new Button("Display");
+
+        Arrays.asList(addArticleButton, updateArticleButton, deleteArticleButton, displayButton)
+            .forEach(button -> button.setStyle("-fx-background-color: #FFB300;"));
+
+        mainButtons.getChildren().addAll(
+            addArticleButton, updateArticleButton, deleteArticleButton, displayButton
+        );
+
+        HBox utilityButtons = new HBox(10);
+        utilityButtons.setAlignment(Pos.CENTER);
 
         Button backupButton = new Button("Backup Articles");
-        backupButton.getStyleClass().add("button");
-        grid.add(backupButton, 1, 8);
-        
         Button importButton = new Button("Import Articles");
-        importButton.getStyleClass().add("button");
-        grid.add(importButton, 2, 8);
 
-        Button backButton = new Button("Back");
-        backButton.getStyleClass().add("button");
-        grid.add(backButton, 0, 9);
-        
-        Button displayButton = new Button("Display");
-        displayButton.getStyleClass().add("button");
-        grid.add(displayButton, 0, 10);
+        Arrays.asList(backupButton, importButton)
+            .forEach(button -> button.setStyle("-fx-background-color: #FFB300;"));
 
+        utilityButtons.getChildren().addAll(backupButton, importButton);
+
+        container.getChildren().addAll(
+            header,
+            searchBox,
+            articleListView,
+            inputFields,
+            mainButtons,
+            utilityButtons
+        );
+
+        //handlers
         searchButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
                 String searchTerm = searchField.getText();
-                System.out.println("Searching for: " + searchTerm);
-                
-                List<String> articles = articleDbHelper.searchArticles(searchTerm);
-                
-                //update article results w search results
+                List<String> articles = articleDbHelper.searchArticlesSimple(searchTerm);
                 articleListView.getItems().clear();
                 articleListView.getItems().addAll(articles);
             } catch (Exception e) {
-                System.err.println("searching error: " + e.getMessage());
-                e.printStackTrace();
+                showError("Search Error", e.getMessage());
             } finally {
                 articleDbHelper.closeConnection();
             }
         });
 
-        addArticleButton.setOnAction(event -> 
-        {
-            try 
-            {
-            	
+        addArticleButton.setOnAction(event -> {
+            try {
+                if (titleField.getText().trim().isEmpty()) {
+                    showError("Input Error", "Title is required");
+                    return;
+                }
+
                 articleDbHelper.connectToDatabase();
                 String encryptedTitle = ArticleEncryptionUtils.encrypt(titleField.getText(), secretKey);
                 String encryptedDescription = ArticleEncryptionUtils.encrypt(descriptionField.getText(), secretKey);
                 String encryptedKeywords = ArticleEncryptionUtils.encrypt(keywordsField.getText(), secretKey);
                 String encryptedBody = ArticleEncryptionUtils.encrypt(bodyField.getText(), secretKey);
+                
                 articleDbHelper.addArticle(encryptedTitle, encryptedDescription, encryptedKeywords, encryptedBody);
-            } catch (Exception e) 
-            {
-                e.printStackTrace();
-            } finally 
-            {
-                System.out.println("added article: " + titleField.getText());
+                showInfo("Success", "Article added successfully");
+                clearFields(titleField, descriptionField, keywordsField, bodyField);
+                
+                //refresh
+                searchButton.fire();
+            } catch (Exception e) {
+                showError("Add Error", e.getMessage());
+            } finally {
                 articleDbHelper.closeConnection();
             }
         });
 
         updateArticleButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
-            if (selectedTitle != null) 
-            {
-            	
+            if (selectedTitle != null) {
                 try {
                     articleDbHelper.connectToDatabase();
+                    String encryptedTitle = ArticleEncryptionUtils.encrypt(titleField.getText(), secretKey);
+                    String encryptedDescription = ArticleEncryptionUtils.encrypt(descriptionField.getText(), secretKey);
+                    String encryptedKeywords = ArticleEncryptionUtils.encrypt(keywordsField.getText(), secretKey);
+                    String encryptedBody = ArticleEncryptionUtils.encrypt(bodyField.getText(), secretKey);
                     
-                    //grabs text fields
-                    String newTitle = titleField.getText().trim();
-                    String newDescription = descriptionField.getText().trim();
-                    String newKeywords = keywordsField.getText().trim();
-                    String newBody = bodyField.getText().trim();
+                    articleDbHelper.updateArticle(selectedTitle, encryptedTitle, encryptedDescription, 
+                        encryptedKeywords, encryptedBody);
                     
-                    //update artice with the added content
-                    articleDbHelper.updateArticle(selectedTitle, newTitle, newDescription, newKeywords, newBody);
-                    
-                    // if title has content, update with that content
-                    if (!newTitle.isEmpty()) 
-                    {
-                        int selectedIndex = articleListView.getSelectionModel().getSelectedIndex();
-                        articleListView.getItems().set(selectedIndex, newTitle);
-                    }
-                    
-                    // clear fields after
-                    titleField.clear();
-                    
-                    descriptionField.clear();
-                    keywordsField.clear();
-                    bodyField.clear();
-                    
-                    System.out.println("article updated");
-                    
-                    
-                    // refresh results to show update
-                    String searchTerm = searchField.getText();
-                    
-                    List<String> articles = articleDbHelper.searchArticles(searchTerm);
-                    articleListView.getItems().clear();
-                    articleListView.getItems().addAll(articles);
-                    
-                } catch (SQLException e) 
-                
-                {
-                    System.err.println("error updating: " + e.getMessage());
-                    e.printStackTrace();
+                    showInfo("Success", "Article updated successfully");
+                    //refresh
+                    searchButton.fire();
+                } catch (Exception e) {
+                    showError("Update Error", e.getMessage());
                 } finally {
                     articleDbHelper.closeConnection();
                 }
             } else {
-                System.out.println("article not slected");
+                showError("Selection Error", "select article");
             }
         });
 
         deleteArticleButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
-            if (selectedTitle != null) 
-            {
+            if (selectedTitle != null) {
                 try {
                     articleDbHelper.connectToDatabase();
                     articleDbHelper.deleteArticle(selectedTitle);
-                    
-                    // remove article from results
-                    articleListView.getItems().remove(selectedTitle);
-                    
-                    // clear section
-                    articleListView.getSelectionModel().clearSelection();
-                    
-                    System.out.println("article deleted: " + selectedTitle);
+                    showInfo("Success", "article deleted");
+                    //refresh
+                    searchButton.fire();
                 } catch (SQLException e) {
-                    System.err.println("Error deleting: " + e.getMessage());
-                    e.printStackTrace();
+                    showError("Delete Error", e.getMessage());
                 } finally {
                     articleDbHelper.closeConnection();
                 }
             } else {
-                System.out.println("No article selected for deletion");
+                showError("Selection Error", "Please select an article to delete");
             }
         });
 
-        backupButton.setOnAction(event -> 
-        {
-            try 
-            {
-                articleDbHelper.connectToDatabase();
-                articleDbHelper.backupArticles("test.txt");
-            } catch (SQLException e) 
-            {
-                e.printStackTrace();
-            } catch (Exception e) {
-				e.printStackTrace();
-			} finally 
-            {
-            	System.out.println("articles backed up");
-                articleDbHelper.closeConnection();
-            }
-        });
-        
-        importButton.setOnAction(event -> 
-        {
-            try 
-            {
-                articleDbHelper.connectToDatabase();
-                articleDbHelper.importArticles("test.txt");
-            } catch (SQLException e) 
-            {
-                e.printStackTrace();
-            } catch (Exception e) 
-            {
-            	
-				e.printStackTrace();
-			} finally 
-            {
-            	System.out.println("articles imported");
-                articleDbHelper.closeConnection();
-            }
-        });
-        
-        
-        
         displayButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
-            System.out.println("title (decrypted): " + selectedTitle);
-            
-            if (selectedTitle != null) 
-            {
+            if (selectedTitle != null) {
                 try {
                     articleDbHelper.connectToDatabase();
                     String encryptedBody = articleDbHelper.getArticleBody(selectedTitle);
                     
-                    if (encryptedBody != null) 
-                    {
-                        try {
-                            // decrypt body
-                            String decryptedBody = ArticleEncryptionUtils.decrypt(encryptedBody, secretKey);
-                            System.out.println("article body decrypted!");
-                            
-                            // new window for body txt
-                            Stage articleStage = new Stage();
-                            articleStage.setTitle("Article: " + selectedTitle);
-                            
-                            // content formatting
-                            Text titleText = new Text(selectedTitle);
-                            titleText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;"); 
-                            TextArea contentArea = new TextArea(decryptedBody);
-                            contentArea.setWrapText(true);
-                            
-                            contentArea.setEditable(false);
-                            
-                            contentArea.setPrefRowCount(20);
-                            contentArea.setPrefColumnCount(60);
-                            contentArea.setStyle("-fx-font-size: 14px;");
-                            
-                            // vbox for display
-                            VBox layout = new VBox(10);
-                            layout.setPadding(new Insets(15));
-                            layout.getChildren().addAll(titleText, contentArea);
-                            
-                            // scrolling for off screen content
-                            ScrollPane scrollPane = new ScrollPane(layout);
-                            scrollPane.setFitToWidth(true);
-                            
-                            // scene
-                            Scene articleScene = new Scene(scrollPane, 800, 600);
-                            articleStage.setScene(articleScene);
-                            
-                            // shows window
-                            articleStage.show();
-                        } catch (Exception e) {
-                            System.err.println("decryption error: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    } else {
-                        System.out.println("article has no content: " + selectedTitle);
+                    if (encryptedBody != null) {
+                        String decryptedBody = ArticleEncryptionUtils.decrypt(encryptedBody, secretKey);
+                        displayArticlePopup(selectedTitle, decryptedBody);
                     }
                 } catch (Exception e) {
-                    System.err.println("error: " + e.getMessage());
-                    e.printStackTrace();
+                    showError("Display Error", e.getMessage());
                 } finally {
                     articleDbHelper.closeConnection();
                 }
             } else {
-                System.out.println("none selected");
+                showError("Selection Error", "select article");
             }
         });
 
-        backButton.setOnAction(event -> 
-        {
-            AdminPage adminPage = new AdminPage();
-            adminPage.start(new Stage());
-            stage.close();
+        backupButton.setOnAction(event -> {
+            try {
+                articleDbHelper.connectToDatabase();
+                articleDbHelper.backupArticles("articles_backup.txt");
+                showInfo("Success", "Articles backed up successfully");
+            } catch (Exception e) {
+                showError("Backup Error", e.getMessage());
+            } finally {
+                articleDbHelper.closeConnection();
+            }
         });
 
-        Scene scene = new Scene(grid, 600, 600);
-        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-        stage.setScene(scene);
-        stage.show();
+        importButton.setOnAction(event -> {
+            try {
+                articleDbHelper.connectToDatabase();
+                articleDbHelper.importArticles("articles_backup.txt");
+                showInfo("Success", "Articles imported successfully");
+                //refresh
+                searchButton.fire();
+            } catch (Exception e) {
+                showError("Import Error", e.getMessage());
+            } finally {
+                articleDbHelper.closeConnection();
+            }
+        });
+
+        //listener
+        articleListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                try {
+                    articleDbHelper.connectToDatabase();
+                    String encryptedBody = articleDbHelper.getArticleBody(newVal);
+                    if (encryptedBody != null) {
+                        titleField.setText(newVal);
+                        String decryptedBody = ArticleEncryptionUtils.decrypt(encryptedBody, secretKey);
+                        bodyField.setText(decryptedBody);
+                    }
+                } catch (Exception e) {
+                    showError("Error", "Failed to load article details: " + e.getMessage());
+                } finally {
+                    articleDbHelper.closeConnection();
+                }
+            }
+        });
+    }
+
+    private void displayArticlePopup(String title, String content) {
+        Stage popupStage = new Stage();
+        popupStage.setTitle("Article: " + title);
+        
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(15));
+        layout.setStyle("-fx-background-color: #A15757;");
+        
+        Text titleText = new Text(title);
+        titleText.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-fill: white;");
+        
+        TextArea contentArea = new TextArea(content);
+        contentArea.setWrapText(true);
+        contentArea.setEditable(false);
+        contentArea.setPrefRowCount(20);
+        contentArea.setPrefColumnCount(60);
+        
+        Button closeButton = new Button("Close");
+        closeButton.setStyle("-fx-background-color: #FFB300;");
+        closeButton.setOnAction(e -> popupStage.close());
+        
+        layout.getChildren().addAll(titleText, contentArea, closeButton);
+        
+        Scene popupScene = new Scene(layout, 800, 600);
+        popupStage.setScene(popupScene);
+        popupStage.show();
+    }
+
+    private void clearFields(TextInputControl... fields) {
+        for (TextInputControl field : fields) {
+            field.clear();
+        }
+    }
+
+    private void showError(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    private void showInfo(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {

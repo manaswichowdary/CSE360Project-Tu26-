@@ -1,7 +1,16 @@
 package src;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Database functions throughout the whole program
@@ -83,6 +92,16 @@ public class DatabaseHelper {
                 + "used BOOLEAN DEFAULT FALSE, "
                 + "FOREIGN KEY (user_id) REFERENCES cse360users(id))";
         statement.execute(passwordResetsTable);
+        
+        String messagesTable = "CREATE TABLE IF NOT EXISTS student_messages ("
+                + "message_id INT AUTO_INCREMENT PRIMARY KEY, "
+                + "username VARCHAR(255), "
+                + "message_type VARCHAR(50), "  // generic, specific
+                + "message_text TEXT, "
+                + "search_history TEXT, "
+                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+                + "FOREIGN KEY (username) REFERENCES cse360users(username))";
+            statement.execute(messagesTable);
     }
 
     // Check if the database is empty
@@ -105,13 +124,12 @@ public class DatabaseHelper {
      * @throws SQLException
      */
     public String runSQLQuery(String query) throws SQLException {
-        StringBuilder result = new StringBuilder();  // Use StringBuilder to accumulate the result
+        StringBuilder result = new StringBuilder(); 
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             ResultSetMetaData rsmd = rs.getMetaData();
             int columnsNumber = rsmd.getColumnCount();
             
-            // Iterate through the result set and accumulate the results
             while (rs.next()) {
                 for (int i = 1; i <= columnsNumber; i++) {
                     if (i > 1) result.append(", ");  // Append commas between columns
@@ -477,6 +495,41 @@ public class DatabaseHelper {
 	        return rs.next();  // Return true if the OTP matches
 	    }
 	}
+    
+    //Phase 3 stuff
+    public void addStudentMessage(String username, String messageType, String messageText, String searchHistory) 
+    	    throws SQLException {
+    	        String query = "INSERT INTO student_messages (username, message_type, message_text, search_history) "
+    	            + "VALUES (?, ?, ?, ?)";
+    	        try (PreparedStatement pstmt = connection.prepareStatement(query)) 
+    	        {
+    	            pstmt.setString(1, username);
+    	            pstmt.setString(2, messageType);
+    	            pstmt.setString(3, messageText);
+    	            pstmt.setString(4, searchHistory);
+    	            pstmt.executeUpdate();
+    	        }
+    	    }
+    
+    public List<Map<String, String>> getStudentMessages() throws SQLException 
+    {
+        List<Map<String, String>> messages = new ArrayList<>();
+        String query = "SELECT * FROM student_messages ORDER BY created_at DESC";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) 
+            {
+                Map<String, String> message = new HashMap<>();
+                message.put("username", rs.getString("username"));
+                message.put("type", rs.getString("message_type"));
+                message.put("message", rs.getString("message_text"));
+                message.put("searchHistory", rs.getString("search_history"));
+                message.put("created", rs.getTimestamp("created_at").toString());
+                messages.add(message);
+            }
+        }
+        return messages;
+    }
 
 }
         

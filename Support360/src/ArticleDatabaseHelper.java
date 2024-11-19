@@ -1,9 +1,20 @@
 package src;
-import java.io.*;
-import java.sql.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 
@@ -36,14 +47,43 @@ public class ArticleDatabaseHelper {
     }
 
     private void createTables() throws SQLException {
-        String articlesTable = "CREATE TABLE IF NOT EXISTS articles (" +
-                             "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                             "title VARCHAR(255), " +
-                             "description VARCHAR(255), " +
-                             "keywords VARCHAR(255), " +
-                             "body TEXT)";
+        String articlesTable = "CREATE TABLE IF NOT EXISTS articles ("
+            + "id INT AUTO_INCREMENT PRIMARY KEY, "
+            + "title VARCHAR(255), "
+            + "description VARCHAR(255), "
+            + "keywords VARCHAR(255), "
+            + "body TEXT, "
+            + "level VARCHAR(20), "
+            + "group_id INT, "
+            + "special_group_id INT)";
         statement.execute(articlesTable);
-        System.out.println("Articles table checked/created successfully");
+
+        String groupsTable = "CREATE TABLE IF NOT EXISTS article_groups ("
+            + "id INT AUTO_INCREMENT PRIMARY KEY, "
+            + "group_name VARCHAR(255), "
+            + "created_by VARCHAR(255))";
+        statement.execute(groupsTable);
+
+        String specialGroupsTable = "CREATE TABLE IF NOT EXISTS special_access_groups ("
+            + "id INT AUTO_INCREMENT PRIMARY KEY, "
+            + "group_name VARCHAR(255), "
+            + "created_by VARCHAR(255))";
+        statement.execute(specialGroupsTable);
+
+        String accessRightsTable = "CREATE TABLE IF NOT EXISTS group_access_rights ("
+            + "id INT AUTO_INCREMENT PRIMARY KEY, "
+            + "group_id INT, "
+            + "username VARCHAR(255), "
+            + "access_type VARCHAR(50), "
+            + "group_type VARCHAR(50))";
+        statement.execute(accessRightsTable);
+
+        String searchHistoryTable = "CREATE TABLE IF NOT EXISTS search_history ("
+            + "id INT AUTO_INCREMENT PRIMARY KEY, "
+            + "username VARCHAR(255), "
+            + "search_terms TEXT, "
+            + "search_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)";
+        statement.execute(searchHistoryTable);
     }
 
     public void addArticle(String title, String description, String keywords, String body) throws SQLException {
@@ -66,34 +106,80 @@ public class ArticleDatabaseHelper {
      */
     public List<String> searchArticles(String searchTerm) throws SQLException {
         List<String> results = new ArrayList<>();
-        //filter articles after encryption
-        String query = "SELECT title FROM articles";
         
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            
+        String query = "SELECT title, description, keywords FROM articles WHERE 1=1";
+        
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            query += " AND (LOWER(title) LIKE LOWER(?) OR " +
+                    "LOWER(description) LIKE LOWER(?) OR " +
+                    "LOWER(keywords) LIKE LOWER(?))";
+        }
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                String searchPattern = "%" + searchTerm + "%";
+                pstmt.setString(1, searchPattern);
+                pstmt.setString(2, searchPattern);
+                pstmt.setString(3, searchPattern);
+            }
+
+            ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                String encryptedTitle = rs.getString("title");
                 try {
-                    //decrypt title
-                    String decryptedTitle = ArticleEncryptionUtils.decrypt(encryptedTitle, secretKey);
-                    
-                    //if search field is empty
-                    if (searchTerm == null || searchTerm.isEmpty() || 
-                        decryptedTitle.toLowerCase().contains(searchTerm.toLowerCase())) 
-                    {
+                    String encryptedTitle = rs.getString("title");
+                    if (encryptedTitle != null) {
+                        String decryptedTitle = ArticleEncryptionUtils.decrypt(encryptedTitle, secretKey);
                         results.add(decryptedTitle);
-                        System.out.println("matching article: " + decryptedTitle);
                     }
-                } catch (Exception e) 
-                {
-                    System.err.println("decryption error: " + e.getMessage());
+                } catch (Exception e) {
+                    System.err.println("Error decrypting article data: " + e.getMessage());
                 }
             }
         }
-        
-        System.out.println("Search completed. Found " + results.size() + " matching articles");
         return results;
+    }
+    
+    public List<String> searchArticlesSimple(String searchTerm) throws SQLException {
+        List<String> results = new ArrayList<>();
+        String query = "SELECT title FROM articles WHERE " +
+                      "LOWER(title) LIKE LOWER(?) OR " +
+                      "LOWER(description) LIKE LOWER(?) OR " +
+                      "LOWER(keywords) LIKE LOWER(?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            String searchPattern = "%" + searchTerm + "%";
+            pstmt.setString(1, searchPattern);
+            pstmt.setString(2, searchPattern);
+            pstmt.setString(3, searchPattern);
+            
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                String encryptedTitle = rs.getString("title");
+                try {
+                    String decryptedTitle = ArticleEncryptionUtils.decrypt(encryptedTitle, secretKey);
+                    results.add(decryptedTitle);
+                } catch (Exception e) {
+                    System.err.println("Error decrypting title: " + e.getMessage());
+                }
+            }
+        }
+        return results;
+    }
+    
+    private boolean isAdmin(String username) {
+        try {
+            String query = "SELECT role FROM cse360users WHERE username = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+                pstmt.setString(1, username);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    return "Admin".equals(rs.getString("role"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking admin status: " + e.getMessage());
+        }
+        return false;
     }
 
     /**
@@ -107,17 +193,14 @@ public class ArticleDatabaseHelper {
      */
     public void updateArticle(String oldTitle, String newTitle, String newDescription, String newKeywords, String newBody) throws SQLException {
         try {
-            //encrypt old title to be able to find it
             String encryptedOldTitle = ArticleEncryptionUtils.encrypt(oldTitle, secretKey);
             
-            //existing data
             String selectQuery = "SELECT title, description, keywords, body FROM articles WHERE title = ?";
             String existingTitle = null;
             String existingDescription = null;
             String existingKeywords = null;
             String existingBody = null;
             
-            //try connection
             try (PreparedStatement selectStmt = connection.prepareStatement(selectQuery)) {
                 selectStmt.setString(1, encryptedOldTitle);
                 ResultSet rs = selectStmt.executeQuery();
@@ -259,7 +342,6 @@ public class ArticleDatabaseHelper {
              ResultSet rs = stmt.executeQuery("SELECT * FROM articles");
              BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
             
-            // Write header
             writer.write("id|title|description|keywords|body");
             writer.newLine();
             
@@ -288,7 +370,7 @@ public class ArticleDatabaseHelper {
         statement.executeUpdate("DELETE FROM articles");
         
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String header = reader.readLine(); // ignore header
+            String header = reader.readLine();
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] fields = line.split("\\|", -1);
@@ -309,8 +391,196 @@ public class ArticleDatabaseHelper {
             System.out.println("Articles restored from backup: " + filename);
         }
     }
+    
+    
+    //Phase 3 stuff
+    
+    public void createGroup(String groupName, String creatorUsername) throws SQLException {
+        String query = "INSERT INTO article_groups (group_name, created_by) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, groupName);
+            pstmt.setString(2, creatorUsername);
+            pstmt.executeUpdate();
+            System.out.println("Group created: " + groupName + " by " + creatorUsername);
+        }
+    }
+    
+    public void createSpecialGroup(String groupName, String creatorUsername) throws SQLException 
+    {
+        String query = "INSERT INTO special_access_groups (group_name, created_by) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) 
+        {
+            pstmt.setString(1, groupName);
+            pstmt.setString(2, creatorUsername);
+            pstmt.executeUpdate();
 
-    public void closeConnection() {
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if (rs.next()) 
+            {
+                int groupId = rs.getInt(1);
+                addGroupAccess(groupId, creatorUsername, "admin", "special");
+            }
+        }
+    }
+    
+    public void addGroupAccess(int groupId, String username, String accessType, String groupType) 
+    		throws SQLException {
+    		    String query = "INSERT INTO group_access_rights (group_id, username, access_type, group_type) "
+    		        + "VALUES (?, ?, ?, ?)";
+    		    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+    		        pstmt.setInt(1, groupId);
+    		        pstmt.setString(2, username);
+    		        pstmt.setString(3, accessType);
+    		        pstmt.setString(4, groupType);
+    		        pstmt.executeUpdate();
+    		    }
+    		}
+    
+    public void addArticleToGroup(int articleId, int groupId, boolean isSpecial) throws SQLException {
+        String query = "UPDATE articles SET " + 
+            (isSpecial ? "special_group_id" : "group_id") + " = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setInt(2, articleId);
+            pstmt.executeUpdate();
+        }
+    }
+    
+    
+    
+    public boolean hasGroupAccess(int groupId, String username, String accessType, String groupType) 
+    		throws SQLException {
+    		    String query = "SELECT 1 FROM group_access_rights WHERE group_id = ? AND username = ? "
+    		        + "AND access_type = ? AND group_type = ?";
+    		    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+    		        pstmt.setInt(1, groupId);
+    		        pstmt.setString(2, username);
+    		        pstmt.setString(3, accessType);
+    		        pstmt.setString(4, groupType);
+    		        return pstmt.executeQuery().next();
+    		    }
+    		}
+    
+
+    public List<Map<String, String>> searchArticlesWithFilters(String searchTerm, String level, 
+        Integer groupId, String username) throws SQLException 
+    {
+        StringBuilder query = new StringBuilder(
+            "SELECT a.*, g.group_name, sg.group_name as special_group_name FROM articles a "
+            + "LEFT JOIN article_groups g ON a.group_id = g.group_id "
+            + "LEFT JOIN special_access_groups sg ON a.special_group_id = sg.group_id "
+            + "WHERE 1=1 ");
+
+        List<Object> params = new ArrayList<>();
+
+        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+            query.append("AND (LOWER(title) LIKE ? OR LOWER(description) LIKE ? "
+                + "OR LOWER(keywords) LIKE ? OR LOWER(author) LIKE ?) ");
+            String term = "%" + searchTerm.toLowerCase() + "%";
+            params.add(term);
+            params.add(term);
+            params.add(term);
+            params.add(term);
+        }
+
+        if (level != null && !level.equals("all")) {
+            query.append("AND level = ? ");
+            params.add(level);
+        }
+
+        if (groupId != null) {
+            query.append("AND (group_id = ? OR special_group_id = ?) ");
+            params.add(groupId);
+            params.add(groupId);
+        }
+
+        query.append("AND (special_group_id IS NULL OR EXISTS (SELECT 1 FROM group_access_rights "
+            + "WHERE group_id = a.special_group_id AND username = ? AND access_type IN ('admin', 'view'))) ");
+        params.add(username);
+
+        List<Map<String, String>> results = new ArrayList<>();
+        try (PreparedStatement pstmt = connection.prepareStatement(query.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                pstmt.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Map<String, String> article = new HashMap<>();
+                article.put("id", rs.getString("id"));
+                
+                try {
+                    article.put("title", ArticleEncryptionUtils.decrypt(rs.getString("title"), secretKey));
+                    article.put("description", ArticleEncryptionUtils.decrypt(rs.getString("description"), secretKey));
+                    article.put("author", rs.getString("author"));
+                    article.put("level", rs.getString("level"));
+                    article.put("group_name", rs.getString("group_name"));
+                    article.put("special_group_name", rs.getString("special_group_name"));
+                } catch (Exception e) {
+                    System.err.println("Error decrypting article fields: " + e.getMessage());
+                    continue;
+                }
+                results.add(article);
+            }
+        }
+        return results;
+    }
+
+    public void setArticleLevel(int articleId, String level) throws SQLException 
+    {
+    	
+        String query = "UPDATE articles SET level = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, level);
+            pstmt.setInt(2, articleId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public List<String> getAvailableGroups(String username) throws SQLException 
+    {
+        String query = "SELECT DISTINCT g.group_name FROM article_groups g "
+            + "LEFT JOIN group_access_rights ar ON g.group_id = ar.group_id "
+            + "WHERE ar.username = ? OR g.created_by = ?";
+        List<String> groups = new ArrayList<>();
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, username);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                groups.add(rs.getString("group_name"));
+            }
+        }
+        return groups;
+    }
+
+    public void recordSearchHistory(String username, String searchTerms) throws SQLException 
+    {
+        String query = "INSERT INTO search_history (username, search_terms) VALUES (?, ?)";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, searchTerms);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public List<String> getSearchHistory(String username) throws SQLException 
+    {
+        String query = "SELECT search_terms FROM search_history WHERE username = ? "
+            + "ORDER BY search_time DESC LIMIT 10";
+        List<String> history = new ArrayList<>();
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                history.add(rs.getString("search_terms"));
+            }
+        }
+        return history;
+    }
+
+    public void closeConnection() 
+    {
         try {
             if (statement != null) statement.close();
             if (connection != null) connection.close();
