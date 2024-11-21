@@ -27,6 +27,10 @@ public class AdminPage extends Application {
     private DatabaseHelper dbHelper;
     private ArticleDatabaseHelper articleDbHelper;
 
+    
+    /** 
+     * @param stage
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Admin");
@@ -108,6 +112,12 @@ public class AdminPage extends Application {
         stage.show();
     }
 
+    
+    /** 
+     * Method to designate user role
+     * @param grid
+     * @param parentStage
+     */
     private void setupUserManagement(GridPane grid, Stage parentStage) {
         grid.setPadding(new Insets(20));
         grid.setHgap(10);
@@ -153,6 +163,9 @@ public class AdminPage extends Application {
         deleteUserButton.setStyle("-fx-background-color: #FFB300;");
         grid.add(deleteUserButton, 0, 5);
 
+        /*
+         * button to generate OTP
+         */
         generateOtpButton.setOnAction(event -> {
             try {
                 dbHelper.connectToDatabase();
@@ -257,6 +270,9 @@ public class AdminPage extends Application {
         }
     }
 
+    /*
+     * Method to show error if it occurs
+     */
     private void showError(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
