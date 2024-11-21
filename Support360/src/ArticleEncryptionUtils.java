@@ -10,11 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Encryption utility
+ * Encryption utility to add encryption before putting into the database
  */
 public class ArticleEncryptionUtils 
 {
 
+    
+    /** 
+     * @param passphrase
+     * @return SecretKey
+     */
     public static SecretKey getAESKeyFromPassphrase(String passphrase) 
     {
         try 
@@ -27,6 +32,13 @@ public class ArticleEncryptionUtils
         }
     }
 
+    
+    /** Method to encrypyt the input string
+     * @param data
+     * @param secretKey
+     * @return String
+     * @throws Exception
+     */
     public static String encrypt(String data, SecretKey secretKey) throws Exception 
     {
         Cipher cipher = Cipher.getInstance("AES");
@@ -35,6 +47,10 @@ public class ArticleEncryptionUtils
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
+    /**
+     * Method to decrypt an input string
+     * @return String
+     */
     public static String decrypt(String encryptedData, SecretKey secretKey) throws Exception 
     {
         Cipher cipher = Cipher.getInstance("AES");
