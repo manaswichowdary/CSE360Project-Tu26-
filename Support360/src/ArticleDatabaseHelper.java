@@ -32,6 +32,10 @@ public class ArticleDatabaseHelper {
     private Connection connection = null;
     private Statement statement = null;
 
+    
+    /** 
+     * @throws SQLException
+     */
     public void connectToDatabase() throws SQLException {
         try {
             System.out.println("Connecting to article database...");
@@ -46,6 +50,11 @@ public class ArticleDatabaseHelper {
         }
     }
 
+    
+    /** 
+     * Method to create tables
+     * @throws SQLException
+     */
     private void createTables() throws SQLException {
         String articlesTable = "CREATE TABLE IF NOT EXISTS articles ("
             + "id INT AUTO_INCREMENT PRIMARY KEY, "
@@ -86,6 +95,17 @@ public class ArticleDatabaseHelper {
         statement.execute(searchHistoryTable);
     }
 
+    
+    /** 
+     * @param title
+     * @param description
+     * @param keywords
+     * @param body
+     * @throws SQLException
+     */
+    /*
+     * Method to add articles, given all input parameters
+     */
     public void addArticle(String title, String description, String keywords, String body) throws SQLException {
         String query = "INSERT INTO articles (title, description, keywords, body) VALUES (?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -139,6 +159,12 @@ public class ArticleDatabaseHelper {
         return results;
     }
     
+    
+    /** 
+     * @param searchTerm
+     * @return List<String>
+     * @throws SQLException
+     */
     public List<String> searchArticlesSimple(String searchTerm) throws SQLException {
         List<String> results = new ArrayList<>();
         String query = "SELECT title FROM articles WHERE " +
@@ -166,6 +192,11 @@ public class ArticleDatabaseHelper {
         return results;
     }
     
+    
+    /** 
+     * @param username
+     * @return boolean
+     */
     private boolean isAdmin(String username) {
         try {
             String query = "SELECT role FROM cse360users WHERE username = ?";
@@ -393,8 +424,17 @@ public class ArticleDatabaseHelper {
     }
     
     
-    //Phase 3 stuff
     
+    /** 
+     * @param groupName
+     * @param creatorUsername
+     * @throws SQLException
+     */
+    //Phase 3 methods
+    
+    /*
+     * createGroup method creates a group to store similar articles together
+     */
     public void createGroup(String groupName, String creatorUsername) throws SQLException {
         String query = "INSERT INTO article_groups (group_name, created_by) VALUES (?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -405,6 +445,15 @@ public class ArticleDatabaseHelper {
         }
     }
     
+    
+    /** 
+     * @param groupName
+     * @param creatorUsername
+     * @throws SQLException
+     */
+    /*
+     * Special access groups
+     */
     public void createSpecialGroup(String groupName, String creatorUsername) throws SQLException 
     {
         String query = "INSERT INTO special_access_groups (group_name, created_by) VALUES (?, ?)";
@@ -423,6 +472,9 @@ public class ArticleDatabaseHelper {
         }
     }
     
+    /*
+     * Method to add a user's access to a group's articles
+     */
     public void addGroupAccess(int groupId, String username, String accessType, String groupType) 
     		throws SQLException {
     		    String query = "INSERT INTO group_access_rights (group_id, username, access_type, group_type) "
@@ -447,7 +499,9 @@ public class ArticleDatabaseHelper {
     }
     
     
-    
+    /*
+     * Checks if a user has access to a group
+     */
     public boolean hasGroupAccess(int groupId, String username, String accessType, String groupType) 
     		throws SQLException {
     		    String query = "SELECT 1 FROM group_access_rights WHERE group_id = ? AND username = ? "
@@ -461,7 +515,10 @@ public class ArticleDatabaseHelper {
     		    }
     		}
     
-
+    
+    /*
+     * Searches for articles in the database based on filters applied
+     */
     public List<Map<String, String>> searchArticlesWithFilters(String searchTerm, String level, 
         Integer groupId, String username) throws SQLException 
     {
@@ -526,6 +583,9 @@ public class ArticleDatabaseHelper {
         return results;
     }
 
+    /*
+     * Sets an article to a given level
+     */
     public void setArticleLevel(int articleId, String level) throws SQLException 
     {
     	
@@ -537,6 +597,9 @@ public class ArticleDatabaseHelper {
         }
     }
 
+    /*
+     * Returns a list of all groups of articles
+     */
     public List<String> getAvailableGroups(String username) throws SQLException 
     {
         String query = "SELECT DISTINCT g.group_name FROM article_groups g "
@@ -554,6 +617,9 @@ public class ArticleDatabaseHelper {
         return groups;
     }
 
+    /*
+     * Method to store the search history of a user
+     */
     public void recordSearchHistory(String username, String searchTerms) throws SQLException 
     {
         String query = "INSERT INTO search_history (username, search_terms) VALUES (?, ?)";
@@ -564,6 +630,9 @@ public class ArticleDatabaseHelper {
         }
     }
 
+    /*
+     * Method to print the search history
+     */
     public List<String> getSearchHistory(String username) throws SQLException 
     {
         String query = "SELECT search_terms FROM search_history WHERE username = ? "
