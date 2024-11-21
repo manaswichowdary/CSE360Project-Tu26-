@@ -11,7 +11,9 @@ public class Tests
     private int testsPassed;
     private int totalTests;
     
-    
+    /*
+     * Constructor to initialize Tests
+     */
     public Tests() 
     {
     	//db
@@ -22,6 +24,12 @@ public class Tests
         totalTests = 0;
     }
     
+    
+    /** 
+     * Checking a particular test
+     * @param testName
+     * @param condition
+     */
     private void checkTest(String testName, boolean condition) 
     {
         totalTests++;
@@ -35,7 +43,9 @@ public class Tests
         }
     }
     
-    
+    /*
+     * Method to run all checks in once
+     */
     public void runAllTests() 
     {
         
@@ -53,6 +63,9 @@ public class Tests
         }
     }
 
+    /*
+     * Check connection to the DB
+     */
     private void testDatabaseConnection() 
     {
         try 
@@ -65,6 +78,9 @@ public class Tests
         }
     }
     
+    /*
+     * Check if Encryption worked
+     */
     private void testEncryption() 
     {
         try {
@@ -84,6 +100,10 @@ public class Tests
     }
 
 
+    
+    /** 
+     * @param args
+     */
     public static void main(String[] args) {
         Tests tester = new Tests();
         tester.runAllTests();
