@@ -50,6 +50,10 @@ public class DatabaseHelper {
         return connection;
     }
 
+    
+    /** 
+     * @throws SQLException
+     */
     // Create necessary tables
     private void createTables() throws SQLException {
         String userTable = "CREATE TABLE IF NOT EXISTS cse360users ("
@@ -476,6 +480,12 @@ public class DatabaseHelper {
         }
     }
     
+    
+    /** 
+     * @param userId
+     * @param newPassword
+     * @throws SQLException
+     */
     public void updateUserPassword(int userId, String newPassword) throws SQLException {
         String query = "UPDATE cse360users SET password = ? WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -486,6 +496,9 @@ public class DatabaseHelper {
         }
     }
     
+    /*
+     * Method to validate if a OTP is correct
+     */
     public boolean validateOTP(int userId, String otp) throws SQLException {
 	    String query = "SELECT * FROM user_otps WHERE user_id = ? AND otp = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -496,7 +509,7 @@ public class DatabaseHelper {
 	    }
 	}
     
-    //Phase 3 stuff
+    //Phase 3 method to add a student message into the student_messages table
     public void addStudentMessage(String username, String messageType, String messageText, String searchHistory) 
     	    throws SQLException {
     	        String query = "INSERT INTO student_messages (username, message_type, message_text, search_history) "
@@ -511,6 +524,10 @@ public class DatabaseHelper {
     	        }
     	    }
     
+    
+    /*
+    * Method to display student Messages
+    */
     public List<Map<String, String>> getStudentMessages() throws SQLException 
     {
         List<Map<String, String>> messages = new ArrayList<>();
