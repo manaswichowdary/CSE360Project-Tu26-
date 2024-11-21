@@ -10,12 +10,24 @@ public class ArticleEncryptionHelper
 
     private static final String SECRET_KEY = "123group26key123";
 
+    
+    /** 
+     * @param content
+     * @return String
+     * @throws Exception
+     */
     //encryption
     public static String encryptArticleContent(String content) throws Exception 
     {
         SecretKey secretKey = ArticleEncryptionUtils.getAESKeyFromPassphrase(SECRET_KEY);
         return ArticleEncryptionUtils.encrypt(content, secretKey);
     }
+    
+    /** 
+     * @param encryptedContent
+     * @return String
+     * @throws Exception
+     */
     //decryption
     public static String decryptArticleContent(String encryptedContent) throws Exception 
     {
@@ -23,6 +35,8 @@ public class ArticleEncryptionHelper
         return ArticleEncryptionUtils.decrypt(encryptedContent, secretKey);
     }
 
+    // encryption and decryption of each fields
+    
     public static String encryptTitle(String title) throws Exception 
     {
         return encryptArticleContent(title);
