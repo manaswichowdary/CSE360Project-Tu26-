@@ -11,6 +11,10 @@ import javafx.collections.FXCollections;
 import javax.crypto.SecretKey;
 import java.util.*;
 
+/*
+ * Studentpage class handles student users.
+ * It supports student login, setup, and article accessibility.
+ */
 public class StudentPage extends Application 
 {
     private ArticleDatabaseHelper articleDbHelper = new ArticleDatabaseHelper();
@@ -28,6 +32,11 @@ public class StudentPage extends Application
         }
     }
 
+    
+    /** 
+     * JavaFX Setup
+     * @param stage
+     */
     @Override
     public void start(Stage stage) 
     {
@@ -82,7 +91,10 @@ public class StudentPage extends Application
             helpButtons,
             logoutButton
         );
-
+        
+        /*
+         * Searching for articles
+         */
         searchButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -114,6 +126,9 @@ public class StudentPage extends Application
             }
         });
 
+        /*
+         * Article searching based on student question
+         */
         genericHelpButton.setOnAction(event -> 
             showHelpDialog("generic", "describe your question:"));
         
@@ -134,6 +149,11 @@ public class StudentPage extends Application
         stage.show();
     }
 
+    
+    /** 
+     * Display article to the student
+     * @param title
+     */
     private void displayArticle(String title) 
     {
         try {
@@ -175,6 +195,9 @@ public class StudentPage extends Application
         }
     }
 
+    /*
+     * Method to display the Help Dialog box
+     */
     private void showHelpDialog(String messageType, String prompt) 
     {
         Stage dialogStage = new Stage();
