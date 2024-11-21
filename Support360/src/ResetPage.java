@@ -1,93 +1,141 @@
 package src;
-import javafx.application.Application;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import java.sql.SQLException;
-import java.sql.SQLException;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.geometry.*;
+import javafx.scene.text.Text;
+import java.util.Map;
+import java.util.List;
 
-public class ResetPage extends Application {
+/*
+ * StudentMessagesPanel class displays all messages received from students
+ */
+public class StudentMessagesPanel extends VBox 
+{
+    private DatabaseHelper dbHelper;
+    private ListView<String> messageListView;
+    private TextArea messageDetailArea;
+
+    /*
+     * Constructor to initialize the DB
+     * Displaying all Student messages
+     */
+    public StudentMessagesPanel() {
+        this.dbHelper = new DatabaseHelper();
+        this.setPadding(new Insets(10));
+        this.setSpacing(10);
+
+        Label titleLabel = new Label("Student Messages");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        messageListView = new ListView<>();
+        messageListView.setPrefHeight(200);
+
+        messageDetailArea = new TextArea();
+        messageDetailArea.setEditable(false);
+        messageDetailArea.setWrapText(true);
+        messageDetailArea.setPrefRowCount(5);
+
+        Button refreshButton = new Button("Refresh");
+        refreshButton.setOnAction(e -> refreshMessages());
+
+        this.getChildren().addAll(
+            titleLabel,
+            refreshButton,
+            
+            messageListView,
+            new Label("Message Details:"),
+            messageDetailArea
+        );
+
+        messageListView.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldVal, newVal) -> showMessageDetails(newVal));
+
+        refreshMessages();
+    }
+
+    /*
+     * RefereshMessages method fetches recently added messages
+     */
+    private void refreshMessages() {
+        try {
+            dbHelper.connectToDatabase();
+            List<Map<String, String>> messages = dbHelper.getStudentMessages();
+            messageListView.getItems().clear();
+            
+            for (Map<String, String> message : messages) {
+                String username = message.get("username");
+                String type = message.get("type");
+                String created = message.get("created");
+                
+                String listItem = String.format(
+                    "[%s] %s - %s Message",
+                    created.split("\\.")[0],
+                    username,
+                    type.substring(0, 1).toUpperCase() + type.substring(1)
+                );
+                
+                messageListView.getItems().add(listItem);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("load message failure");
+        } finally {
+            dbHelper.closeConnection();
+        }
+    }
 
     
+    
     /** 
-     * @param stage
+     * Method to display the body of the Message
+     * @param selectedItem
      */
-    @Override
-    public void start(Stage stage) {
-        stage.setTitle("Reset Password");
-
-        // Set up page as grid
-        GridPane grid = new GridPane();
-        grid.setAlignment(Pos.CENTER);
-
-        // Username label and entry field
-        Label userLabel = new Label("Username:");
-        grid.add(userLabel, 0, 1);
-        TextField userField = new TextField();
-        grid.add(userField, 1, 1);
-
-        // OTP label and entry field
-        Label otpLabel = new Label("OTP:");
-        grid.add(otpLabel, 0, 2);
-        TextField otpField = new TextField();
-        grid.add(otpField, 1, 2);
-
-        // New password label and entry field
-        Label passLabel = new Label("New Password:");
-        grid.add(passLabel, 0, 3);
-        PasswordField passField = new PasswordField();
-        grid.add(passField, 1, 3);
-
-        // Reset Password button
-        Button resetPasswordButton = new Button("Reset Password");
-        grid.add(resetPasswordButton, 1, 4);
-
-        // Event handler for reset password
-        resetPasswordButton.setOnAction(event -> {
-            String username = userField.getText();
-            String otp = otpField.getText();
-            String newPassword = passField.getText();
-
-            try {
-                DatabaseHelper dbHelper = new DatabaseHelper();
-                dbHelper.connectToDatabase();
-
-                // Get user ID based on the username
-                int userId = dbHelper.getUserIdByUsername(username);
-                if (userId != -1) {
-                    // Validate OTP
-                    boolean validOTP = dbHelper.validateOTP(userId, otp);
-                    if (validOTP) {
-                        // If OTP is valid, reset the password
-                        dbHelper.updateUserPassword(userId, newPassword);
-                        System.out.println("Password reset successfully.");
-                    } else {
-                        System.out.println("Invalid OTP.");
-                    }
-                } else {
-                    System.out.println("User not found.");
+    private void showMessageDetails(String selectedItem) 
+    {
+    
+    	if (selectedItem == null) return;
+        
+        try {
+            dbHelper.connectToDatabase();
+            List<Map<String, String>> messages = dbHelper.getStudentMessages();
+            
+            for (Map<String, String> message : messages) {
+                String created = message.get("created").split("\\.")[0];
+                if (selectedItem.contains(created)) {
+                    String details = String.format(
+                        "From: %s\n" +
+                        "Type: %s\n" +
+                        "Time: %s\n\n" +
+                        "Message:\n%s\n\n" +
+                        "Search History:\n%s",
+                        message.get("username"),
+                        message.get("type"),
+                        message.get("created"),
+                        message.get("message"),
+                        message.get("searchHistory")
+                    );
+                    messageDetailArea.setText(details);
+                    break;
                 }
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
-        });
-
-        // Scene creation
-        Scene scene = new Scene(grid, 400, 300);
-        stage.setScene(scene);
-        stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showError("load message details");
+        } finally {
+            dbHelper.closeConnection();
+        }
     }
 
     
     /** 
-     * @param args
+     * @param message
      */
-    public static void main(String[] args) {
-        launch(args);
+    private void showError(String message) 
+    {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
