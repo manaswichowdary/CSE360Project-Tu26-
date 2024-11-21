@@ -25,7 +25,7 @@ import javax.crypto.SecretKey;
 public class ArticleDatabaseHelper {
     static final String JDBC_DRIVER = "org.h2.Driver";
     
-    static final String DB_URL = "jdbc:h2:./database/articles_db";
+    static final String DB_URL = "jdbc:h2:./database/new_articles_db";
     static final String USER = "group26";
     static final String PASS = "ayogroup26";
 
@@ -59,10 +59,10 @@ public class ArticleDatabaseHelper {
         statement.execute(articlesTable);
 
         String groupsTable = "CREATE TABLE IF NOT EXISTS article_groups ("
-            + "id INT AUTO_INCREMENT PRIMARY KEY, "
-            + "group_name VARCHAR(255), "
-            + "created_by VARCHAR(255))";
-        statement.execute(groupsTable);
+                + "group_id INT AUTO_INCREMENT PRIMARY KEY, "
+                + "group_name VARCHAR(255) UNIQUE, "
+                + "created_by VARCHAR(255))";
+            statement.execute(groupsTable);
 
         String specialGroupsTable = "CREATE TABLE IF NOT EXISTS special_access_groups ("
             + "id INT AUTO_INCREMENT PRIMARY KEY, "
@@ -396,12 +396,23 @@ public class ArticleDatabaseHelper {
     //Phase 3 stuff
     
     public void createGroup(String groupName, String creatorUsername) throws SQLException {
-        String query = "INSERT INTO article_groups (group_name, created_by) VALUES (?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, groupName);
-            pstmt.setString(2, creatorUsername);
-            pstmt.executeUpdate();
-            System.out.println("Group created: " + groupName + " by " + creatorUsername);
+        // First check if group exists
+        String checkQuery = "SELECT COUNT(*) FROM article_groups WHERE group_name = ?";
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkQuery)) {
+            checkStmt.setString(1, groupName);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                throw new SQLException("Group already exists");
+            }
+        }
+
+        // If not exists, create new group
+        String insertQuery = "INSERT INTO article_groups (group_name, created_by) VALUES (?, ?)";
+        try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+            insertStmt.setString(1, groupName);
+            insertStmt.setString(2, creatorUsername);
+            insertStmt.executeUpdate();
+            System.out.println("Created group: " + groupName);
         }
     }
     
@@ -418,23 +429,21 @@ public class ArticleDatabaseHelper {
             if (rs.next()) 
             {
                 int groupId = rs.getInt(1);
-                addGroupAccess(groupId, creatorUsername, "admin", "special");
+                addGroupAccess(groupId, creatorUsername, "special");
             }
         }
     }
     
-    public void addGroupAccess(int groupId, String username, String accessType, String groupType) 
-    		throws SQLException {
-    		    String query = "INSERT INTO group_access_rights (group_id, username, access_type, group_type) "
-    		        + "VALUES (?, ?, ?, ?)";
-    		    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-    		        pstmt.setInt(1, groupId);
-    		        pstmt.setString(2, username);
-    		        pstmt.setString(3, accessType);
-    		        pstmt.setString(4, groupType);
-    		        pstmt.executeUpdate();
-    		    }
-    		}
+    public void addGroupAccess(int groupId, String username, String accessType) throws SQLException {
+        String query = "INSERT INTO group_access_rights (group_id, username, access_type, group_type) "
+                      + "VALUES (?, ?, ?, 'regular')";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, groupId);
+            pstmt.setString(2, username);
+            pstmt.setString(3, accessType);
+            pstmt.executeUpdate();
+        }
+    }
     
     public void addArticleToGroup(int articleId, int groupId, boolean isSpecial) throws SQLException {
         String query = "UPDATE articles SET " + 
@@ -537,20 +546,18 @@ public class ArticleDatabaseHelper {
         }
     }
 
-    public List<String> getAvailableGroups(String username) throws SQLException 
-    {
-        String query = "SELECT DISTINCT g.group_name FROM article_groups g "
-            + "LEFT JOIN group_access_rights ar ON g.group_id = ar.group_id "
-            + "WHERE ar.username = ? OR g.created_by = ?";
+    public List<String> getAvailableGroups(String username) throws SQLException {
         List<String> groups = new ArrayList<>();
-        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, username);
-            ResultSet rs = pstmt.executeQuery();
+        // Most basic query possible to start with
+        String query = "SELECT group_name FROM article_groups";
+        
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
                 groups.add(rs.getString("group_name"));
             }
         }
+        System.out.println("Retrieved groups: " + groups.size());
         return groups;
     }
 
