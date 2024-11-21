@@ -12,6 +12,10 @@ import javafx.scene.text.Text;
 import javafx.collections.FXCollections;
 import java.util.*;
 
+/*
+ * InstructorPage class handles Instructor user, allowing functions like - 
+ * Adding students, assigning articles, sending invites to students.
+ */
 public class InstructorPage extends Application {
     private ArticleDatabaseHelper articleDbHelper = new ArticleDatabaseHelper();
     private SecretKey secretKey;
@@ -25,6 +29,10 @@ public class InstructorPage extends Application {
         }
     }
 
+    
+    /** 
+     * @param stage
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Instructor");
@@ -97,6 +105,11 @@ public class InstructorPage extends Application {
         stage.show();
     }
 
+    
+    /** 
+     * UI for the Article management from instructor
+     * @param grid
+     */
     private void setupArticleManagement(GridPane grid) {
         grid.setHgap(10);
         grid.setVgap(10);
@@ -174,6 +187,9 @@ public class InstructorPage extends Application {
         );
         grid.add(buttonBox, 0, 7, 3, 1);
 
+        /*
+         * Instructor search for articles
+         */
         searchButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -188,6 +204,9 @@ public class InstructorPage extends Application {
             }
         });
 
+        /*
+         * Adding article
+         */
         addArticleButton.setOnAction(event -> {
             try {
                 if (titleField.getText().trim().isEmpty()) {
@@ -214,6 +233,9 @@ public class InstructorPage extends Application {
             }
         });
 
+        /*
+         * Updating an article
+         */
         updateArticleButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
@@ -239,6 +261,9 @@ public class InstructorPage extends Application {
             }
         });
 
+        /*
+         * Instructor has rights to delete an article
+         */
         deleteArticleButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
@@ -257,6 +282,9 @@ public class InstructorPage extends Application {
             }
         });
 
+        /*
+         * Display the body of an article
+         */
         displayButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
@@ -278,6 +306,9 @@ public class InstructorPage extends Application {
             }
         });
 
+        /*
+         * Create a backup file for the articles
+         */
         backupButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -290,6 +321,9 @@ public class InstructorPage extends Application {
             }
         });
 
+        /*
+         * Import a backed up file of articles
+         */
         importButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -341,6 +375,9 @@ public class InstructorPage extends Application {
         ListView<String> groupListView = new ListView<>();
         groupListView.setPrefHeight(200);
 
+        /*
+         * Grouping similar articles
+         */
         createGroupButton.setOnAction(event -> {
             try {
                 String groupName = groupNameField.getText().trim();
@@ -362,6 +399,9 @@ public class InstructorPage extends Application {
         return layout;
     }
 
+    /*
+     * Updating a group's article membership
+     */
     private void updateGroupList(ListView<String> listView) 
     {
         try {
@@ -393,6 +433,9 @@ public class InstructorPage extends Application {
         alert.showAndWait();
     }
     
+    /*
+     * UI For article display
+     */
     private void displayArticlePopup(String title, String content) 
     {
         Stage popupStage = new Stage();
