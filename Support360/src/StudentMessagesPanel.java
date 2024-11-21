@@ -6,12 +6,19 @@ import javafx.scene.text.Text;
 import java.util.Map;
 import java.util.List;
 
+/*
+ * StudentMessagesPanel class displays all messages received from students
+ */
 public class StudentMessagesPanel extends VBox 
 {
     private DatabaseHelper dbHelper;
     private ListView<String> messageListView;
     private TextArea messageDetailArea;
 
+    /*
+     * Constructor to initialize the DB
+     * Displaying all Student messages
+     */
     public StudentMessagesPanel() {
         this.dbHelper = new DatabaseHelper();
         this.setPadding(new Insets(10));
@@ -46,7 +53,9 @@ public class StudentMessagesPanel extends VBox
         refreshMessages();
     }
 
-    
+    /*
+     * RefereshMessages method fetches recently added messages
+     */
     private void refreshMessages() {
         try {
             dbHelper.connectToDatabase();
@@ -76,6 +85,11 @@ public class StudentMessagesPanel extends VBox
     }
 
     
+    
+    /** 
+     * Method to display the body of the Message
+     * @param selectedItem
+     */
     private void showMessageDetails(String selectedItem) 
     {
     
@@ -112,6 +126,10 @@ public class StudentMessagesPanel extends VBox
         }
     }
 
+    
+    /** 
+     * @param message
+     */
     private void showError(String message) 
     {
         Alert alert = new Alert(Alert.AlertType.ERROR);
