@@ -13,6 +13,10 @@ import java.sql.SQLException;
 
 public class ResetPage extends Application {
 
+    
+    /** 
+     * @param stage
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Reset Password");
@@ -79,6 +83,10 @@ public class ResetPage extends Application {
         stage.show();
     }
 
+    
+    /** 
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
