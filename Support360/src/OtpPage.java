@@ -147,7 +147,4 @@ public class OtpPage extends Application
         // Return the random string as a new String object
         return new String(randomString);
     }
-	
-	
-
 }
