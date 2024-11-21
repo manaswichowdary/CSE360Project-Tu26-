@@ -14,6 +14,10 @@ import javafx.scene.text.Text;
 import javafx.collections.FXCollections;
 import java.util.*;
 
+/**
+ * AdminArticlesPage class for the Support360 application.
+ * This class handles the articles created by the admin, including adding, backing, deleting, sharing.
+ */
 public class AdminArticlesPage extends Application {
     private ArticleDatabaseHelper articleDbHelper = new ArticleDatabaseHelper();
     private SecretKey secretKey;
@@ -27,6 +31,11 @@ public class AdminArticlesPage extends Application {
         }
     }
 
+    
+    /** 
+     * UI for the page
+     * @param stage
+     */
     @Override
     public void start(Stage stage) {
         stage.setTitle("Support360 Admin - Manage Articles");
@@ -70,6 +79,11 @@ public class AdminArticlesPage extends Application {
         stage.show();
     }
 
+    
+    /** 
+     * UI For Article management
+     * @param container
+     */
     public void setupArticleManagement(VBox container) {
         container.setSpacing(10);
         container.setPadding(new Insets(20));
@@ -167,6 +181,10 @@ public class AdminArticlesPage extends Application {
         );
 
         //handlers
+        /*
+         * Connecting to the database.
+         * searchArticlesSimple method called
+         */
         searchButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -180,7 +198,10 @@ public class AdminArticlesPage extends Application {
                 articleDbHelper.closeConnection();
             }
         });
-
+        
+        /*
+         * Adding articles to the database
+         */
         addArticleButton.setOnAction(event -> {
             try {
                 if (titleField.getText().trim().isEmpty()) {
@@ -206,7 +227,10 @@ public class AdminArticlesPage extends Application {
                 articleDbHelper.closeConnection();
             }
         });
-
+        
+        /*
+         * Updating articles in the database
+         */
         updateArticleButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
@@ -233,6 +257,9 @@ public class AdminArticlesPage extends Application {
             }
         });
 
+        /*
+         * Article Deletion from DB
+         */
         deleteArticleButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
@@ -252,6 +279,9 @@ public class AdminArticlesPage extends Application {
             }
         });
 
+        /*
+         * Display contents of an article
+         */
         displayButton.setOnAction(event -> {
             String selectedTitle = articleListView.getSelectionModel().getSelectedItem();
             if (selectedTitle != null) {
@@ -273,6 +303,9 @@ public class AdminArticlesPage extends Application {
             }
         });
 
+        /*
+         * Creating backup for the article
+         */
         backupButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -285,6 +318,9 @@ public class AdminArticlesPage extends Application {
             }
         });
 
+        /*
+         * Importing articles from a backup file
+         */
         importButton.setOnAction(event -> {
             try {
                 articleDbHelper.connectToDatabase();
@@ -319,6 +355,12 @@ public class AdminArticlesPage extends Application {
         });
     }
 
+    
+    /** 
+     * Article Display UI
+     * @param title
+     * @param content
+     */
     private void displayArticlePopup(String title, String content) {
         Stage popupStage = new Stage();
         popupStage.setTitle("Article: " + title);
@@ -347,12 +389,21 @@ public class AdminArticlesPage extends Application {
         popupStage.show();
     }
 
+    
+    /** 
+     * @param fields
+     */
     private void clearFields(TextInputControl... fields) {
         for (TextInputControl field : fields) {
             field.clear();
         }
     }
 
+    
+    /** 
+     * @param title
+     * @param content
+     */
     private void showError(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -361,6 +412,11 @@ public class AdminArticlesPage extends Application {
         alert.showAndWait();
     }
 
+    
+    /** 
+     * @param title
+     * @param content
+     */
     private void showInfo(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -369,6 +425,10 @@ public class AdminArticlesPage extends Application {
         alert.showAndWait();
     }
 
+    
+    /** 
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
