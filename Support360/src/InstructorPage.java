@@ -178,7 +178,7 @@ public class InstructorPage extends Application {
             try {
                 articleDbHelper.connectToDatabase();
                 String searchTerm = searchField.getText();
-                List<String> articles = articleDbHelper.searchArticlesSimple(searchTerm);
+                List<String> articles = articleDbHelper.searchArticles(searchTerm);
                 articleListView.getItems().clear();
                 articleListView.getItems().addAll(articles);
             } catch (Exception e) {

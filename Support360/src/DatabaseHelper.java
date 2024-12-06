@@ -19,7 +19,7 @@ public class DatabaseHelper {
 
     // JDBC driver name and database URL
     static final String JDBC_DRIVER = "org.h2.Driver";
-    static final String DB_URL = "jdbc:h2:./database/new_project1_CSE360m4";
+    static final String DB_URL = "jdbc:h2:./database/new_project1_CSE360m5";
 
     // Database credentials
     static final String USER = "group26";
@@ -94,14 +94,15 @@ public class DatabaseHelper {
         statement.execute(passwordResetsTable);
         
         String messagesTable = "CREATE TABLE IF NOT EXISTS student_messages ("
-                + "message_id INT AUTO_INCREMENT PRIMARY KEY, "
-                + "username VARCHAR(255), "
-                + "message_type VARCHAR(50), "  // generic, specific
-                + "message_text TEXT, "
-                + "search_history TEXT, "
-                + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-                + "FOREIGN KEY (username) REFERENCES cse360users(username))";
-            statement.execute(messagesTable);
+        	    + "message_id INT AUTO_INCREMENT PRIMARY KEY, "
+        	    + "username VARCHAR(255), "
+        	    + "message_type VARCHAR(50), "
+        	    + "message_text TEXT, "
+        	    + "search_history TEXT, "
+        	    + "response TEXT, "  
+        	    + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+        	    + "FOREIGN KEY (username) REFERENCES cse360users(username))";
+        	statement.execute(messagesTable);
     }
 
     // Check if the database is empty
@@ -185,6 +186,45 @@ public class DatabaseHelper {
             pstmt.executeUpdate();
         }
         System.out.println(role);
+    }
+    
+    public void resolveStudentMessage(int messageId, String response) throws SQLException {
+        String query = "UPDATE student_messages SET response = ? WHERE message_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, response);
+            pstmt.setInt(2, messageId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public void deleteStudentMessage(int messageId) throws SQLException {
+        String query = "DELETE FROM student_messages WHERE message_id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, messageId);
+            pstmt.executeUpdate();
+        }
+    }
+
+    public List<Map<String, String>> getStudentInbox(String username) throws SQLException {
+        List<Map<String, String>> messages = new ArrayList<>();
+        String query = "SELECT message_id, message_type, message_text, response, created_at "
+                     + "FROM student_messages WHERE username = ? ORDER BY created_at DESC";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                Map<String, String> message = new HashMap<>();
+                message.put("id", rs.getString("message_id"));
+                message.put("type", rs.getString("message_type"));
+                message.put("message", rs.getString("message_text"));
+                message.put("response", rs.getString("response"));
+                message.put("created", rs.getTimestamp("created_at").toString());
+                messages.add(message);
+            }
+        }
+        return messages;
     }
 
     // Complete account setup by adding first name, email, etc.
@@ -511,15 +551,15 @@ public class DatabaseHelper {
     	        }
     	    }
     
-    public List<Map<String, String>> getStudentMessages() throws SQLException 
-    {
+    public List<Map<String, String>> getStudentMessages() throws SQLException {
         List<Map<String, String>> messages = new ArrayList<>();
         String query = "SELECT * FROM student_messages ORDER BY created_at DESC";
+        
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) 
-            {
+            while (rs.next()) {
                 Map<String, String> message = new HashMap<>();
+                message.put("id", String.valueOf(rs.getInt("message_id")));  // Convert to String
                 message.put("username", rs.getString("username"));
                 message.put("type", rs.getString("message_type"));
                 message.put("message", rs.getString("message_text"));

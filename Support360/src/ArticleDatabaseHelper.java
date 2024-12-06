@@ -25,7 +25,7 @@ import javax.crypto.SecretKey;
 public class ArticleDatabaseHelper {
     static final String JDBC_DRIVER = "org.h2.Driver";
     
-    static final String DB_URL = "jdbc:h2:./database/new_articles_db";
+    static final String DB_URL = "jdbc:h2:./database/new_articles_db2";
     static final String USER = "group26";
     static final String PASS = "ayogroup26";
 
@@ -107,32 +107,25 @@ public class ArticleDatabaseHelper {
     public List<String> searchArticles(String searchTerm) throws SQLException {
         List<String> results = new ArrayList<>();
         
-        String query = "SELECT title, description, keywords FROM articles WHERE 1=1";
-        
-        if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            query += " AND (LOWER(title) LIKE LOWER(?) OR " +
-                    "LOWER(description) LIKE LOWER(?) OR " +
-                    "LOWER(keywords) LIKE LOWER(?))";
-        }
+        // Get all articles regardless of search term
+        String query = "SELECT title FROM articles";
         
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
-            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-                String searchPattern = "%" + searchTerm + "%";
-                pstmt.setString(1, searchPattern);
-                pstmt.setString(2, searchPattern);
-                pstmt.setString(3, searchPattern);
-            }
-
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 try {
                     String encryptedTitle = rs.getString("title");
                     if (encryptedTitle != null) {
                         String decryptedTitle = ArticleEncryptionUtils.decrypt(encryptedTitle, secretKey);
-                        results.add(decryptedTitle);
+                        
+                        // If there's a search term, only add titles that match (case insensitive)
+                        if (searchTerm == null || searchTerm.trim().isEmpty() || 
+                            decryptedTitle.toLowerCase().contains(searchTerm.toLowerCase())) {
+                            results.add(decryptedTitle);
+                        }
                     }
                 } catch (Exception e) {
-                    System.err.println("Error decrypting article data: " + e.getMessage());
+                    System.err.println("Error decrypting article title: " + e.getMessage());
                 }
             }
         }

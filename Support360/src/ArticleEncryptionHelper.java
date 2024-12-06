@@ -8,7 +8,7 @@ import javax.crypto.SecretKey;
 public class ArticleEncryptionHelper 
 {
 
-    private static final String SECRET_KEY = "123group26key123";
+	private static final String SECRET_KEY = "group26key";
 
     //encryption
     public static String encryptArticleContent(String content) throws Exception 
